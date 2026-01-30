@@ -22,6 +22,7 @@ Your machine needs:
 Something like this:
 
 ```shell
+./path/to/bin/bga.sh setup
 mkdir mycode
 cd mycode
 git clone ... myrepo1
