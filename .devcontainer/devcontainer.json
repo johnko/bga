@@ -3,5 +3,11 @@
     "dockerfile": "Dockerfile"
   },
   "initializeCommand": "docker pull --platform=linux/amd64 mcr.microsoft.com/devcontainers/universal:5-noble",
-  "initializeCommandComment": "This is a workaround for arm64 MacOS devcontainer issue"
+  "initializeCommandComment": "This is a workaround for arm64 MacOS devcontainer issue",
+  "portsAttributes": {
+    "4096": {
+      "label": "OpenCode port",
+      "onAutoForward": "openBrowserOnce"
+    }
+  }
 }
