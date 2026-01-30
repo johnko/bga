@@ -4,5 +4,6 @@ COPY ./setup.sh /setup.sh
 RUN bash /setup.sh
 
 COPY ./opencode-serve.sh /opencode-serve.sh
+RUN chmod a+rx /opencode-serve.sh
 
 EXPOSE 4096
