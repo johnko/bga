@@ -6,8 +6,10 @@
   "initializeCommandComment": "This is a workaround for arm64 MacOS devcontainer issue",
   "portsAttributes": {
     "4096": {
-      "label": "OpenCode port",
-      "onAutoForward": "openBrowserOnce"
+      "label": "OpenCode port"
     }
+  },
+  "otherPortsAttributes": {
+    "onAutoForward": "openBrowserOnce"
   }
 }
