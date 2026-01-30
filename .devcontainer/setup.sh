@@ -1,8 +1,17 @@
 #!/usr/bin/env bash
 set -euxo pipefail
 
-go install github.com/mikefarah/yq/v4@v4.50.1
-go install mvdan.cc/sh/v3/cmd/shfmt@v3.12.0
+# renovate: datasource=github-releases depName=anomalyco/opencode packageName=anomalyco/opencode
+OPENCODE_VERSION=v1.1.31
 
-# sudo apt update
-# sudo apt install --yes shellcheck
+if type mise &>/dev/null; then
+  ## install opencode globally in mise environment
+  mise exec node@$NODE_VERSION -- npm install --global opencode-ai@$OPENCODE_VERSION
+else
+  if type npm &>/dev/null; then
+    npm install --global opencode-ai@$OPENCODE_VERSION
+  else
+    echo "ERROR: couldn't install opencode."
+    exit 1
+  fi
+fi
