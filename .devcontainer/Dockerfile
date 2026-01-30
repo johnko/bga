@@ -7,3 +7,5 @@ COPY ./opencode-serve.sh /opencode-serve.sh
 RUN chmod a+rx /opencode-serve.sh
 
 EXPOSE 4096
+
+CMD ["bash", "/opencode-serve.sh"]
