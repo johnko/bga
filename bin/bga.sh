@@ -1,0 +1,136 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# renovate: datasource=github-releases depName=nodejs/node packageName=nodejs/node
+NODE_VERSION=24.12.0
+
+# renovate: datasource=github-releases depName=devcontainers/cli packageName=devcontainers/cli
+DEVCONTAINERS_VERSION=v0.80.3
+
+
+DEPENDENCIES="
+docker
+jq
+mise
+"
+
+
+help(){
+  cat <<EOF
+Usage:
+  $0 [command] [parameters...]
+
+Commands:
+  help                            Shows this help message.
+  setup                           Checks and installs required
+                                  dependencies.
+  new ./local/path branch-name    Creates git worktree from local
+                                  repo, then create or checkout
+                                  branch, starts Devcontainer,
+                                  starts OpenCode.
+EOF
+  exit 1
+}
+
+
+_check_command_exists(){
+  if type "$1" &>/dev/null; then
+    echo "- $1 ✅" >&2
+    echo 0
+  else
+    echo "- $1 ❌" >&2
+    echo 1
+  fi
+}
+
+
+setup(){
+  set +e
+  ANY_ERROR=0
+  echo "Checking dependencies..."
+  for tool in $DEPENDENCIES; do
+    THIS_ERROR=$(_check_command_exists "$tool")
+    if [[ $THIS_ERROR != "0" ]]; then
+      if [[ $tool == "docker" ]]; then
+        echo "ERROR: Please install Podman https://podman.io/ or Docker https://www.docker.com/"
+      fi
+      if [[ $tool == "jq" ]]; then
+        echo "ERROR: Please install jq https://jqlang.org/"
+      fi
+      if [[ $tool == "mise" ]]; then
+        echo "ERROR: Please install Mise https://mise.jdx.dev/"
+      fi
+    fi
+    ANY_ERROR=$((ANY_ERROR + THIS_ERROR))
+  done
+  echo
+  docker version || ANY_ERROR=$((ANY_ERROR + 1))
+  jq --version || ANY_ERROR=$((ANY_ERROR + 1))
+  mise version || ANY_ERROR=$((ANY_ERROR + 1))
+  set -x
+  mise exec node@$NODE_VERSION -- npm install --global @devcontainers/cli@$DEVCONTAINERS_VERSION
+  set +x
+  exit $ANY_ERROR
+}
+
+
+_devcontainer(){
+  set -x
+  mise exec node@$NODE_VERSION -- devcontainer "$@"
+  set +x
+}
+
+
+new() {
+  LOCAL_REPO="$1"
+  if [[ ! -e $LOCAL_REPO || ! -e "$LOCAL_REPO/.git" ]]; then
+    echo "ERROR: local path $LOCAL_REPO is not a git repo."
+    exit 1
+  else
+    SAFE_BRANCH=$(echo "$2" | sed 's/[^a-zA-Z0-9-]/-/g' | cut -c1-50)
+
+    pushd "$LOCAL_REPO"
+    FOLDER_NAME=$(basename $(pwd))
+    DEFAULT_BRANCH=$(git rev-parse --abbrev-ref origin/HEAD | sed 's,origin/,,')
+    git fetch origin "$DEFAULT_BRANCH"
+
+    for count in 1 2; do
+      if [[ ! -e ../"$FOLDER_NAME.worktrees/$SAFE_BRANCH" ]]; then
+        # add new branch or checkout existing
+        git worktree add --relative-paths -b "$SAFE_BRANCH" ../"$FOLDER_NAME.worktrees/$SAFE_BRANCH" "origin/$DEFAULT_BRANCH" ||
+          git worktree add --relative-paths ../"$FOLDER_NAME.worktrees/$SAFE_BRANCH" "$SAFE_BRANCH" || true
+        if [[ ! -e ../"$FOLDER_NAME.worktrees/$SAFE_BRANCH" ]]; then
+          # still no folder?
+          git worktree prune
+        fi
+      fi
+    done
+
+    echo "Opening devcontainer"
+    CONTAINER_ID=$(_devcontainer up --workspace-folder ../"$FOLDER_NAME.worktrees/$SAFE_BRANCH" --remove-existing-container | jq -r '.containerId')
+    HOST_PORT=$(docker inspect "$CONTAINER_ID" | jq -r '.[].HostConfig.PortBindings."4096/tcp".[].HostPort')
+    echo "Opening browser"
+    set -x
+    open "http://127.0.0.1:$HOST_PORT"
+    set +x
+    echo "Starting OpenCode in devcontainer"
+    set -x
+    _devcontainer exec --workspace-folder ../"$FOLDER_NAME.worktrees/$SAFE_BRANCH" -- bash /opencode-serve.sh &
+    set +x
+  fi
+}
+
+
+set +u
+COMMAND="$1"
+case $COMMAND in
+  setup)
+    setup
+    ;;
+  new)
+    new "$2" "$3"
+    ;;
+  help|*)
+    help
+    ;;
+esac

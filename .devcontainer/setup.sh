@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 set -euxo pipefail
 
+# renovate: datasource=github-releases depName=nodejs/node packageName=nodejs/node
+NODE_VERSION=24.12.0
+
 # renovate: datasource=github-releases depName=anomalyco/opencode packageName=anomalyco/opencode
 OPENCODE_VERSION=v1.1.31
 
