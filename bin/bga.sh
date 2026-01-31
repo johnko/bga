@@ -140,7 +140,7 @@ new() {
     set +x
     echo "Starting OpenCode in devcontainer"
     set -x
-    _devcontainer exec --workspace-folder "$DESTINATION_FOLDER" -- bash /opencode-serve.sh &
+    _devcontainer exec $DEVCONTAINER_UP_ARGS --workspace-folder "$DESTINATION_FOLDER" -- bash /opencode-serve.sh &
     set +x
   fi
 }
