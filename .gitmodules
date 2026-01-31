@@ -1,3 +1,0 @@
-[submodule ".devcontainer/opencode-background-agents"]
-	path = .devcontainer/opencode-background-agents
-	url = https://github.com/kdcokenny/opencode-background-agents.git

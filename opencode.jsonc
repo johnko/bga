@@ -4,6 +4,9 @@
     "cloudflare-ai-gateway",
     "ollama"
   ],
+  "plugin": [
+    "opencode-pty"
+  ],
   "provider": {
     "ollama": {
       "models": {
