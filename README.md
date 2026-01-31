@@ -35,3 +35,24 @@ git clone ... myrepo2
 ## License
 
 MIT
+
+## Why
+
+Control where OpenCode runs and what it can access:
+
+- git worktrees so that agents can't modify the `.git/hooks` that might run when a human uses `git`
+- devcontainers so each opencode gets it's own environment and tools (and even versions of tools)
+
+## TODO / Not Implemented Yet
+
+- File or git diff changes are not visible in the spawned OpenCode
+  - this is because we used a light git worktree so the `.git` data is not available in the container.
+  - this is by design so the agent cannot modify `.git/hooks/*`
+  - current workaround is I used VSCode and it shows me all the git worktrees and changes in each.
+  - in the future, I might consider a separate container without agents that has access to the `.git` data
+  - maybe even automation to use GitHub App integration that will open PR
+
+## Out of Scope
+
+- If you want OpenCode to access your host computer's files, then you don't need this. Just use OpenCode by itself.
+- If you want OpenCode to be the controller and let agents decide when to use devcontainers, then you don't need this. Just use the opencode-devcontainers plugin with OpenCode.
