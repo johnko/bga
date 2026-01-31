@@ -78,6 +78,13 @@ _devcontainer() {
 new() {
   set +u
   DESTINATION_FOLDER="$3"
+  if [[ -n $MOUNT_GIT_WORKTREE_COMMON_DIR ]] && [[ $MOUNT_GIT_WORKTREE_COMMON_DIR == "true" || $MOUNT_GIT_WORKTREE_COMMON_DIR == "1" ]]; then
+    GIT_WORKTREE_ADD_ARGS="--relative-paths"
+    DEVCONTAINER_UP_ARGS="--mount-git-worktree-common-dir"
+  else
+    GIT_WORKTREE_ADD_ARGS=""
+    DEVCONTAINER_UP_ARGS=""
+  fi
   set -u
   LOCAL_REPO="$1"
   if [[ ! -e $LOCAL_REPO || ! -e "$LOCAL_REPO/.git" ]]; then
@@ -98,8 +105,8 @@ new() {
       echo "Attempt $count..."
       if [[ ! -e $DESTINATION_FOLDER ]]; then
         # add new branch or checkout existing
-        git worktree add -b "$SAFE_BRANCH" "$DESTINATION_FOLDER" "origin/$DEFAULT_BRANCH" ||
-          git worktree add "$DESTINATION_FOLDER" "$SAFE_BRANCH" || true
+        git worktree add $GIT_WORKTREE_ADD_ARGS -b "$SAFE_BRANCH" "$DESTINATION_FOLDER" "origin/$DEFAULT_BRANCH" ||
+          git worktree add $GIT_WORKTREE_ADD_ARGS "$DESTINATION_FOLDER" "$SAFE_BRANCH" || true
         if [[ ! -e $DESTINATION_FOLDER ]]; then
           # still no folder?
           git worktree prune
@@ -122,7 +129,7 @@ new() {
     export OPENCODE_HOST_PORT
     echo "OPENCODE_HOST_PORT=$OPENCODE_HOST_PORT"
 
-    CONTAINER_ID=$(_devcontainer up --workspace-folder "$DESTINATION_FOLDER" --remove-existing-container | jq -r '.containerId')
+    CONTAINER_ID=$(_devcontainer up $DEVCONTAINER_UP_ARGS --workspace-folder "$DESTINATION_FOLDER" --remove-existing-container | jq -r '.containerId')
     HOST_PORT=$(docker inspect "$CONTAINER_ID" | jq -r '.[].HostConfig.PortBindings."4096/tcp".[].HostPort')
     echo "Opening browser"
     set -x
