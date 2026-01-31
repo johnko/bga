@@ -5,7 +5,7 @@ set -euo pipefail
 NODE_VERSION=24.12.0
 
 # renovate: datasource=github-releases depName=devcontainers/cli packageName=devcontainers/cli
-DEVCONTAINERS_VERSION=v0.80.3
+DEVCONTAINERS_VERSION=v0.81.0
 
 DEPENDENCIES="
 docker
