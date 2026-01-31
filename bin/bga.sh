@@ -138,8 +138,9 @@ new() {
     _devcontainer exec $DEVCONTAINER_UP_ARGS --workspace-folder "$DESTINATION_FOLDER" -- bash /opencode-serve.sh &
     set +x
     HOST_PORT=$(docker inspect "$CONTAINER_ID" | jq -r '.[].HostConfig.PortBindings."4096/tcp".[].HostPort')
-    echo "Waiting 10 seconds..."
-    sleep 10
+    SLEEP_SECONDS=20
+    echo "Waiting $SLEEP_SECONDS seconds..."
+    sleep $SLEEP_SECONDS
     echo "Opening browser"
     set -x
     open "http://127.0.0.1:$HOST_PORT"
