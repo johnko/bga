@@ -5,11 +5,15 @@ set -euxo pipefail
 NODE_VERSION=24.12.0
 
 if type mise &>/dev/null; then
+  pushd /home/codespace/.opencode/plugin/
   mise exec node@$NODE_VERSION -- npm i unique-names-generator
+  popd
   mise exec node@$NODE_VERSION -- opencode serve --hostname 0.0.0.0
 else
   if type opencode &>/dev/null; then
+    pushd /home/codespace/.opencode/plugin/
     npm i unique-names-generator
+    popd
     opencode serve --hostname 0.0.0.0
   else
     echo "ERROR: couldn't run opencode."
