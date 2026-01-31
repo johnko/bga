@@ -78,9 +78,6 @@ _devcontainer() {
 new() {
   set +u
   DESTINATION_FOLDER="$3"
-  if [[ -z $DESTINATION_FOLDER ]]; then
-    DESTINATION_FOLDER=../"$FOLDER_NAME.worktrees/$SAFE_BRANCH"
-  fi
   set -u
   LOCAL_REPO="$1"
   if [[ ! -e $LOCAL_REPO || ! -e "$LOCAL_REPO/.git" ]]; then
@@ -88,9 +85,12 @@ new() {
     exit 1
   else
     SAFE_BRANCH=$(echo "$2" | sed 's/[^a-zA-Z0-9-]/-/g' | cut -c1-50)
-
     pushd "$LOCAL_REPO"
     FOLDER_NAME=$(basename "$(pwd)")
+    if [[ -z $DESTINATION_FOLDER ]]; then
+      DESTINATION_FOLDER=../"$FOLDER_NAME.worktrees/$SAFE_BRANCH"
+    fi
+
     DEFAULT_BRANCH=$(git rev-parse --abbrev-ref origin/HEAD | sed 's,origin/,,')
     git fetch origin "$DEFAULT_BRANCH"
 
@@ -108,6 +108,20 @@ new() {
     done
 
     echo "Opening devcontainer"
+    cp /Users/jon/code/cursor/bga/.devcontainer/devcontainer.json "$DESTINATION_FOLDER/.devcontainer/devcontainer.json"
+    if type cksum &>/dev/null; then
+      CKSUM_BIN=cksum
+    elif type md5 &>/dev/null; then
+      CKSUM_BIN=md5
+    elif type sha1 &>/dev/null; then
+      CKSUM_BIN=sha1
+    elif type sha1sum &>/dev/null; then
+      CKSUM_BIN=sha1sum
+    fi
+    OPENCODE_HOST_PORT=$(echo "$SAFE_BRANCH" | $CKSUM_BIN | sed 's/^[0-9]*\([0-9]\{5\}\).*/\1/g' | sed 's/^[567890]/4/')
+    export OPENCODE_HOST_PORT
+    echo "OPENCODE_HOST_PORT=$OPENCODE_HOST_PORT"
+
     CONTAINER_ID=$(_devcontainer up --workspace-folder "$DESTINATION_FOLDER" --remove-existing-container | jq -r '.containerId')
     HOST_PORT=$(docker inspect "$CONTAINER_ID" | jq -r '.[].HostConfig.PortBindings."4096/tcp".[].HostPort')
     echo "Opening browser"

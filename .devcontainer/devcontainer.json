@@ -4,5 +4,5 @@
   },
   "initializeCommand": "docker pull --platform=linux/amd64 mcr.microsoft.com/devcontainers/universal:5-noble",
   "initializeCommandComment": "This is a workaround for arm64 MacOS devcontainer issue",
-  "runArgs": ["--publish-all"]
+  "runArgs": ["--publish","127.0.0.1:${localEnv:OPENCODE_HOST_PORT:4096}:4096"]
 }
