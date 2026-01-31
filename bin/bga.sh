@@ -126,6 +126,8 @@ new() {
       CKSUM_BIN="sha1sum"
     fi
     OPENCODE_HOST_PORT=$(echo "$SAFE_BRANCH" | $CKSUM_BIN | sed 's/^[0-9]*\([0-9]\{5\}\).*/\1/g' | sed 's/^[567890]/4/')
+    # OPENCODE_HOST_PORT is used in devcontainer.json used by devcontainer up to pin to a consistent host port per branch
+    # and bind to localhost/127.0.0.1 which is safter than --publish-all
     export OPENCODE_HOST_PORT
     echo "OPENCODE_HOST_PORT=$OPENCODE_HOST_PORT"
 
