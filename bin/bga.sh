@@ -101,8 +101,7 @@ new() {
     DEFAULT_BRANCH=$(git rev-parse --abbrev-ref origin/HEAD | sed 's,origin/,,')
     git fetch origin "$DEFAULT_BRANCH"
 
-    for count in 1 2; do
-      echo "Attempt $count..."
+    for _ in 1 2; do
       if [[ ! -e $DESTINATION_FOLDER ]]; then
         # add new branch or checkout existing
         git worktree add $GIT_WORKTREE_ADD_ARGS -b "$SAFE_BRANCH" "$DESTINATION_FOLDER" "origin/$DEFAULT_BRANCH" ||
@@ -138,12 +137,29 @@ new() {
     _devcontainer exec $DEVCONTAINER_UP_ARGS --workspace-folder "$DESTINATION_FOLDER" -- bash /opencode-serve.sh &
     set +x
     HOST_PORT=$(docker inspect "$CONTAINER_ID" | jq -r '.[].HostConfig.PortBindings."4096/tcp".[].HostPort')
-    SLEEP_SECONDS=20
-    echo "Waiting $SLEEP_SECONDS seconds..."
-    sleep $SLEEP_SECONDS
-    echo "Opening browser"
+    OPENCODE_URL="http://127.0.0.1:$HOST_PORT"
+
+    echo "Checking port..."
+    if type wget &>/dev/null; then
+      CURL_BIN="wget --timeout=5 --quiet --output-document=-"
+    elif type curl &>/dev/null; then
+      CURL_BIN="curl --connect-timeout 5 --fail --silent --output -"
+    fi
+    set +e
+    CURL_EXIT_CODE=500
+    for _ in $(seq 1 60); do
+      # echo "CURL_EXIT_CODE=$CURL_EXIT_CODE"
+      if [[ $CURL_EXIT_CODE != "0" ]]; then
+        $CURL_BIN "$OPENCODE_URL" &>/dev/null
+        CURL_EXIT_CODE=$?
+        sleep 1
+      fi
+    done
+    set -e
+
+    echo "Opening browser..."
     set -x
-    open "http://127.0.0.1:$HOST_PORT"
+    open "$OPENCODE_URL"
     set +x
   fi
 }
