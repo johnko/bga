@@ -82,6 +82,12 @@ _devcontainer(){
 
 
 new() {
+  set +u
+  DESTINATION_FOLDER="$3"
+  if [[ -z "$DESTINATION_FOLDER" ]]; then
+    DESTINATION_FOLDER=../"$FOLDER_NAME.worktrees/$SAFE_BRANCH"
+  fi
+  set -u
   LOCAL_REPO="$1"
   if [[ ! -e $LOCAL_REPO || ! -e "$LOCAL_REPO/.git" ]]; then
     echo "ERROR: local path $LOCAL_REPO is not a git repo."
@@ -90,16 +96,17 @@ new() {
     SAFE_BRANCH=$(echo "$2" | sed 's/[^a-zA-Z0-9-]/-/g' | cut -c1-50)
 
     pushd "$LOCAL_REPO"
-    FOLDER_NAME=$(basename $(pwd))
+    FOLDER_NAME=$(basename "$(pwd)")
     DEFAULT_BRANCH=$(git rev-parse --abbrev-ref origin/HEAD | sed 's,origin/,,')
     git fetch origin "$DEFAULT_BRANCH"
 
     for count in 1 2; do
-      if [[ ! -e ../"$FOLDER_NAME.worktrees/$SAFE_BRANCH" ]]; then
+      echo "Attempt $count..."
+      if [[ ! -e "$DESTINATION_FOLDER" ]]; then
         # add new branch or checkout existing
-        git worktree add -b "$SAFE_BRANCH" ../"$FOLDER_NAME.worktrees/$SAFE_BRANCH" "origin/$DEFAULT_BRANCH" ||
-          git worktree add ../"$FOLDER_NAME.worktrees/$SAFE_BRANCH" "$SAFE_BRANCH" || true
-        if [[ ! -e ../"$FOLDER_NAME.worktrees/$SAFE_BRANCH" ]]; then
+        git worktree add -b "$SAFE_BRANCH" "$DESTINATION_FOLDER" "origin/$DEFAULT_BRANCH" ||
+          git worktree add "$DESTINATION_FOLDER" "$SAFE_BRANCH" || true
+        if [[ ! -e "$DESTINATION_FOLDER" ]]; then
           # still no folder?
           git worktree prune
         fi
@@ -107,7 +114,7 @@ new() {
     done
 
     echo "Opening devcontainer"
-    CONTAINER_ID=$(_devcontainer up --workspace-folder ../"$FOLDER_NAME.worktrees/$SAFE_BRANCH" --remove-existing-container | jq -r '.containerId')
+    CONTAINER_ID=$(_devcontainer up --workspace-folder "$DESTINATION_FOLDER" --remove-existing-container | jq -r '.containerId')
     HOST_PORT=$(docker inspect "$CONTAINER_ID" | jq -r '.[].HostConfig.PortBindings."4096/tcp".[].HostPort')
     echo "Opening browser"
     set -x
@@ -115,7 +122,7 @@ new() {
     set +x
     echo "Starting OpenCode in devcontainer"
     set -x
-    _devcontainer exec --workspace-folder ../"$FOLDER_NAME.worktrees/$SAFE_BRANCH" -- bash /opencode-serve.sh &
+    _devcontainer exec --workspace-folder "$DESTINATION_FOLDER" -- bash /opencode-serve.sh &
     set +x
   fi
 }
