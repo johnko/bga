@@ -115,17 +115,18 @@ new() {
     done
 
     echo "Opening devcontainer"
-    cp /Users/jon/code/cursor/bga/.devcontainer/devcontainer.json "$DESTINATION_FOLDER/.devcontainer/devcontainer.json"
     if type cksum &>/dev/null; then
       CKSUM_BIN="cksum"
     elif type md5 &>/dev/null; then
       CKSUM_BIN="md5"
+    elif type md5sum &>/dev/null; then
+      CKSUM_BIN="md5sum"
     elif type sha1 &>/dev/null; then
       CKSUM_BIN="sha1"
     elif type sha1sum &>/dev/null; then
       CKSUM_BIN="sha1sum"
     fi
-    OPENCODE_HOST_PORT=$(echo "$SAFE_BRANCH" | $CKSUM_BIN | sed 's/^[0-9]*\([0-9]\{5\}\).*/\1/g' | sed 's/^[567890]/4/')
+    OPENCODE_HOST_PORT=$(echo "$SAFE_BRANCH" | $CKSUM_BIN | sed -e 's/[^0-9]//g' -e 's/^[0-9]*\([0-9]\{5\}\).*/\1/g' -e 's/^[567890]/4/')
     # OPENCODE_HOST_PORT is used in devcontainer.json used by devcontainer up to pin to a consistent host port per branch
     # and bind to localhost/127.0.0.1 which is safter than --publish-all
     export OPENCODE_HOST_PORT
