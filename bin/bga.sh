@@ -7,15 +7,13 @@ NODE_VERSION=24.12.0
 # renovate: datasource=github-releases depName=devcontainers/cli packageName=devcontainers/cli
 DEVCONTAINERS_VERSION=v0.80.3
 
-
 DEPENDENCIES="
 docker
 jq
 mise
 "
 
-
-help(){
+help() {
   cat <<EOF
 Usage:
   $0 [command] [parameters...]
@@ -32,8 +30,7 @@ EOF
   exit 1
 }
 
-
-_check_command_exists(){
+_check_command_exists() {
   if type "$1" &>/dev/null; then
     echo "- $1 ✅" >&2
     echo 0
@@ -43,8 +40,7 @@ _check_command_exists(){
   fi
 }
 
-
-setup(){
+setup() {
   set +e
   ANY_ERROR=0
   echo "Checking dependencies..."
@@ -73,18 +69,16 @@ setup(){
   exit $ANY_ERROR
 }
 
-
-_devcontainer(){
+_devcontainer() {
   set -x
   mise exec node@$NODE_VERSION -- devcontainer "$@"
   set +x
 }
 
-
 new() {
   set +u
   DESTINATION_FOLDER="$3"
-  if [[ -z "$DESTINATION_FOLDER" ]]; then
+  if [[ -z $DESTINATION_FOLDER ]]; then
     DESTINATION_FOLDER=../"$FOLDER_NAME.worktrees/$SAFE_BRANCH"
   fi
   set -u
@@ -102,11 +96,11 @@ new() {
 
     for count in 1 2; do
       echo "Attempt $count..."
-      if [[ ! -e "$DESTINATION_FOLDER" ]]; then
+      if [[ ! -e $DESTINATION_FOLDER ]]; then
         # add new branch or checkout existing
         git worktree add -b "$SAFE_BRANCH" "$DESTINATION_FOLDER" "origin/$DEFAULT_BRANCH" ||
           git worktree add "$DESTINATION_FOLDER" "$SAFE_BRANCH" || true
-        if [[ ! -e "$DESTINATION_FOLDER" ]]; then
+        if [[ ! -e $DESTINATION_FOLDER ]]; then
           # still no folder?
           git worktree prune
         fi
@@ -127,7 +121,6 @@ new() {
   fi
 }
 
-
 set +u
 COMMAND="$1"
 case $COMMAND in
@@ -137,7 +130,7 @@ case $COMMAND in
   new)
     new "$2" "$3"
     ;;
-  help|*)
+  help | *)
     help
     ;;
 esac
