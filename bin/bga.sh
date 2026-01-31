@@ -133,14 +133,16 @@ new() {
     echo "OPENCODE_HOST_PORT=$OPENCODE_HOST_PORT"
 
     CONTAINER_ID=$(_devcontainer up $DEVCONTAINER_UP_ARGS --workspace-folder "$DESTINATION_FOLDER" --remove-existing-container | jq -r '.containerId')
-    HOST_PORT=$(docker inspect "$CONTAINER_ID" | jq -r '.[].HostConfig.PortBindings."4096/tcp".[].HostPort')
-    echo "Opening browser"
-    set -x
-    open "http://127.0.0.1:$HOST_PORT"
-    set +x
     echo "Starting OpenCode in devcontainer"
     set -x
     _devcontainer exec $DEVCONTAINER_UP_ARGS --workspace-folder "$DESTINATION_FOLDER" -- bash /opencode-serve.sh &
+    set +x
+    HOST_PORT=$(docker inspect "$CONTAINER_ID" | jq -r '.[].HostConfig.PortBindings."4096/tcp".[].HostPort')
+    echo "Waiting 10 seconds..."
+    sleep 10
+    echo "Opening browser"
+    set -x
+    open "http://127.0.0.1:$HOST_PORT"
     set +x
   fi
 }
