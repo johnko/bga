@@ -1,6 +1,5 @@
 {
   "$schema": "https://opencode.ai/config.json",
-  "default_agent": "plan",
   "enabled_providers": [
     "cloudflare-ai-gateway",
     "ollama"
