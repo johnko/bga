@@ -110,13 +110,13 @@ new() {
     echo "Opening devcontainer"
     cp /Users/jon/code/cursor/bga/.devcontainer/devcontainer.json "$DESTINATION_FOLDER/.devcontainer/devcontainer.json"
     if type cksum &>/dev/null; then
-      CKSUM_BIN=cksum
+      CKSUM_BIN="cksum"
     elif type md5 &>/dev/null; then
-      CKSUM_BIN=md5
+      CKSUM_BIN="md5"
     elif type sha1 &>/dev/null; then
-      CKSUM_BIN=sha1
+      CKSUM_BIN="sha1"
     elif type sha1sum &>/dev/null; then
-      CKSUM_BIN=sha1sum
+      CKSUM_BIN="sha1sum"
     fi
     OPENCODE_HOST_PORT=$(echo "$SAFE_BRANCH" | $CKSUM_BIN | sed 's/^[0-9]*\([0-9]\{5\}\).*/\1/g' | sed 's/^[567890]/4/')
     export OPENCODE_HOST_PORT
