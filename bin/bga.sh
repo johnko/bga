@@ -97,8 +97,8 @@ new() {
     for count in 1 2; do
       if [[ ! -e ../"$FOLDER_NAME.worktrees/$SAFE_BRANCH" ]]; then
         # add new branch or checkout existing
-        git worktree add --relative-paths -b "$SAFE_BRANCH" ../"$FOLDER_NAME.worktrees/$SAFE_BRANCH" "origin/$DEFAULT_BRANCH" ||
-          git worktree add --relative-paths ../"$FOLDER_NAME.worktrees/$SAFE_BRANCH" "$SAFE_BRANCH" || true
+        git worktree add -b "$SAFE_BRANCH" ../"$FOLDER_NAME.worktrees/$SAFE_BRANCH" "origin/$DEFAULT_BRANCH" ||
+          git worktree add ../"$FOLDER_NAME.worktrees/$SAFE_BRANCH" "$SAFE_BRANCH" || true
         if [[ ! -e ../"$FOLDER_NAME.worktrees/$SAFE_BRANCH" ]]; then
           # still no folder?
           git worktree prune
