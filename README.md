@@ -42,6 +42,7 @@ Control where OpenCode runs and what it can access:
 
 - git worktrees so that agents can't modify the `.git/hooks` that might run when a human uses `git`
 - devcontainers so each opencode gets it's own environment and tools (and even versions of tools)
+- reduces some prompt context since agents don't have to know about creating devcontainers themselves
 
 ## TODO / Not Implemented Yet
 
@@ -51,6 +52,8 @@ Control where OpenCode runs and what it can access:
   - current workaround is I used VSCode and it shows me all the git worktrees and changes in each.
   - in the future, I might consider a separate container without agents that has access to the `.git` data
   - maybe even automation to use GitHub App integration that will open PR
+- API to list our spawned devcontainers that are running OpenCode
+- Unfied web UI to list, re-open, open PR, delete, prune these devcontainers that are running OpenCode
 
 ## Out of Scope
 
