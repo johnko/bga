@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # renovate: datasource=github-releases depName=nodejs/node packageName=nodejs/node
-NODE_VERSION=24.13.0
+NODE_VERSION=25.4.0
 
 # renovate: datasource=github-releases depName=devcontainers/cli packageName=devcontainers/cli
 DEVCONTAINERS_VERSION=v0.81.0
