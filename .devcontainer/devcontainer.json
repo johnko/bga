@@ -14,6 +14,6 @@
   },
   "initializeCommand": "docker pull --platform=linux/amd64 mcr.microsoft.com/devcontainers/universal:5-noble",
   "initializeCommandComment": "This is a workaround for arm64 MacOS devcontainer issue",
-  "postStartCommand": "nohup bash -c '/opencode-serve.sh &'",
+  "postStartCommand": "nohup bash -c '/opencode-serve.sh &' >/dev/null 2>&1",
   "runArgs": ["--publish","127.0.0.1:${localEnv:OPENCODE_HOST_PORT:4096}:4096","--publish","127.0.0.1:${localEnv:CODER_HOST_PORT:8080}:8080"]
 }
