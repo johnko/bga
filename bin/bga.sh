@@ -77,6 +77,8 @@ _silent_check() {
   for tool in $DEPENDENCIES; do
     type "$tool" &>/dev/null || setup
   done
+  # also check if devcontainer cli is available
+  mise exec node@$NODE_VERSION -- type devcontainer &>/dev/null || setup
 }
 
 _devcontainer() {
