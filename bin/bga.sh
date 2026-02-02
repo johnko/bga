@@ -73,6 +73,12 @@ setup() {
   fi
 }
 
+_silent_check() {
+  for tool in $DEPENDENCIES; do
+    type "$tool" &>/dev/null || setup
+  done
+}
+
 _devcontainer() {
   set -x
   mise exec node@$NODE_VERSION -- devcontainer "$@"
@@ -106,7 +112,7 @@ _check_and_open_url() {
 }
 
 new() {
-  mise exec node@$NODE_VERSION -- type devcontainer &>/dev/null || setup
+  _silent_check
   set +u
   DESTINATION_FOLDER="$3"
   if [[ -n $MOUNT_GIT_WORKTREE_COMMON_DIR ]] && [[ $MOUNT_GIT_WORKTREE_COMMON_DIR == "true" || $MOUNT_GIT_WORKTREE_COMMON_DIR == "1" ]]; then
