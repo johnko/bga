@@ -3,8 +3,9 @@
 Just a simple script that:
 1. Creates git worktree from a local git repo
 2. Spawns a devcontainer in that git worktree
-3. Runs OpenCode in that container
+3. Runs OpenCode, coder/code-server in that container
 4. Opens your browser to that OpenCode port
+5. Opens your browser to that coder/code-server port
 
 ## Setup
 
