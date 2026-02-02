@@ -6,6 +6,10 @@ RUN bash /setup.sh
 COPY ./opencode-serve.sh /opencode-serve.sh
 RUN chmod a+rx /opencode-serve.sh
 
+RUN install -d -o codespace /home/codespace/.local/share/code-server/User
+COPY code-server-User-settings.json /home/codespace/.local/share/code-server/User/settings.json
+RUN chown -R codespace /home/codespace/.local
+
 # RUN install -d -o codespace /home/codespace/.opencode/plugin/
 # COPY ./opencode-background-agents/src/plugin/ /home/codespace/.opencode/plugin/
 # RUN chown -R codespace /home/codespace/.opencode
