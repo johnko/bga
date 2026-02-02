@@ -4,6 +4,7 @@
   },
   "features": {
     "ghcr.io/coder/devcontainer-features/code-server:1": {
+      "auth": "none",
       "disableTelemetry": true,
       "disableUpdateCheck": true,
       "host": "0.0.0.0"
