@@ -68,7 +68,9 @@ setup() {
   set -x
   mise exec node@$NODE_VERSION -- npm install --global @devcontainers/cli@$DEVCONTAINERS_VERSION
   set +x
-  exit $ANY_ERROR
+  if [[ $ANY_ERROR != "0" ]]; then
+    exit $ANY_ERROR
+  fi
 }
 
 _devcontainer() {
@@ -104,6 +106,7 @@ _check_and_open_url() {
 }
 
 new() {
+  mise exec node@$NODE_VERSION -- type devcontainer || setup
   set +u
   DESTINATION_FOLDER="$3"
   if [[ -n $MOUNT_GIT_WORKTREE_COMMON_DIR ]] && [[ $MOUNT_GIT_WORKTREE_COMMON_DIR == "true" || $MOUNT_GIT_WORKTREE_COMMON_DIR == "1" ]]; then
@@ -197,13 +200,13 @@ list() {
 set +u
 COMMAND="$1"
 case $COMMAND in
-  setup)
+  setup | install)
     setup
     ;;
-  new)
+  new | create)
     new "$2" "$3"
     ;;
-  list | ls)
+  list | ls | ps)
     list
     ;;
   help | *)
