@@ -7,6 +7,7 @@
       "auth": "none",
       "disableTelemetry": true,
       "disableUpdateCheck": true,
+      "disableWorkspaceTrust": true,
       "host": "0.0.0.0"
     }
   },
