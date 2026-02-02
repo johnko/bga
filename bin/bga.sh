@@ -106,7 +106,7 @@ _check_and_open_url() {
 }
 
 new() {
-  mise exec node@$NODE_VERSION -- type devcontainer || setup
+  mise exec node@$NODE_VERSION -- type devcontainer &>/dev/null || setup
   set +u
   DESTINATION_FOLDER="$3"
   if [[ -n $MOUNT_GIT_WORKTREE_COMMON_DIR ]] && [[ $MOUNT_GIT_WORKTREE_COMMON_DIR == "true" || $MOUNT_GIT_WORKTREE_COMMON_DIR == "1" ]]; then
