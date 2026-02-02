@@ -2,6 +2,7 @@
   "extensions.allowed": {},
   "chat.agent.enabled": false,
   "chat.commandCenter.enabled": false,
+  "chat.disableAIFeatures": true,
   "chat.editor.fontSize": 14,
   "chat.extensionUnification.enabled": false,
   "comments.visible": false,
