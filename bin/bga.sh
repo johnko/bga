@@ -166,7 +166,7 @@ new() {
     _devcontainer up $DEVCONTAINER_UP_ARGS --workspace-folder "$DESTINATION_FOLDER" --remove-existing-container | jq -r '.containerId'
     echo "Starting OpenCode in devcontainer"
     set -x
-    _devcontainer exec $DEVCONTAINER_UP_ARGS --workspace-folder "$DESTINATION_FOLDER" -- bash /opencode-serve.sh &
+    _devcontainer exec $DEVCONTAINER_UP_ARGS --workspace-folder "$DESTINATION_FOLDER" -- bash /opencode-serve.sh
     set +x
     # DETECTED_PORT=$(docker inspect "$CONTAINER_ID" | jq -r '.[].HostConfig.PortBindings."4096/tcp".[].HostPort')
     OPENCODE_URL="http://127.0.0.1:$OPENCODE_HOST_PORT"

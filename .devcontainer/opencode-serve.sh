@@ -9,14 +9,14 @@ if type mise &>/dev/null; then
   # # for plugin opencode-background-agents
   # mise exec node@$NODE_VERSION -- npm i unique-names-generator
   # popd
-  mise exec node@$NODE_VERSION -- opencode serve --hostname 0.0.0.0
+  nohup mise exec node@$NODE_VERSION -- opencode serve --hostname 0.0.0.0 &
 else
   if type opencode &>/dev/null; then
     # pushd /home/codespace/.opencode/plugin/
     # # for plugin opencode-background-agents
     # npm i unique-names-generator
     # popd
-    opencode serve --hostname 0.0.0.0
+    nohup opencode serve --hostname 0.0.0.0 &
   else
     echo "ERROR: couldn't run opencode."
     exit 1
