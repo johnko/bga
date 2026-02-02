@@ -26,6 +26,8 @@ Commands:
                                   repo, then create or checkout
                                   branch, starts Devcontainer,
                                   starts OpenCode.
+  list                            List devcontainers and their
+                                  OpenCode, coder/code-server URLs.
 EOF
   exit 1
 }
@@ -173,6 +175,25 @@ new() {
   fi
 }
 
+list() {
+  echo 'HINT: In macOS, you can "Cmd + Double Click" on the URLs.'
+  echo
+  (
+    echo "NAME FOLDER OPENCODE_URL CODER_URL"
+    JSON_ALL_DEVCONTAINERS=$(docker ps --filter 'label=devcontainer.local_folder' --format '{{json}}')
+    for id in $(echo "$JSON_ALL_DEVCONTAINERS" | jq -r '.[].Id'); do
+      # echo "# $id"
+      ITEM_NAME=$(echo "$JSON_ALL_DEVCONTAINERS" | jq -r ".[] | select(.Id == \"$id\") | .Names[0]")
+      ITEM_FOLDER=$(echo "$JSON_ALL_DEVCONTAINERS" | jq -r ".[] | select(.Id == \"$id\") | .Labels.\"devcontainer.local_folder\"")
+      ITEM_OPENCODE_HOST_PORT=$(echo "$JSON_ALL_DEVCONTAINERS" | jq -r ".[] | select(.Id == \"$id\") | .Ports[] | select(.container_port == 4096) | .host_port")
+      ITEM_CODER_HOST_PORT=$(echo "$JSON_ALL_DEVCONTAINERS" | jq -r ".[] | select(.Id == \"$id\") | .Ports[] | select(.container_port == 8080) | .host_port")
+      ITEM_OPENCODE_URL="http://127.0.0.1:$ITEM_OPENCODE_HOST_PORT"
+      ITEM_CODER_URL="http://127.0.0.1:$ITEM_CODER_HOST_PORT"
+      echo "$ITEM_NAME $ITEM_FOLDER $ITEM_OPENCODE_URL $ITEM_CODER_URL"
+    done
+  ) | column -t
+}
+
 set +u
 COMMAND="$1"
 case $COMMAND in
@@ -181,6 +202,9 @@ case $COMMAND in
     ;;
   new)
     new "$2" "$3"
+    ;;
+  list | ls)
+    list
     ;;
   help | *)
     help
