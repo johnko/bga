@@ -11,3 +11,4 @@ RUN chmod a+rx /opencode-serve.sh
 # RUN chown -R codespace /home/codespace/.opencode
 
 EXPOSE 4096
+EXPOSE 8080

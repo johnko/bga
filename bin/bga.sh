@@ -125,19 +125,25 @@ new() {
     elif type sha1sum &>/dev/null; then
       CKSUM_BIN="sha1sum"
     fi
-    OPENCODE_HOST_PORT=$(echo "$SAFE_BRANCH" | $CKSUM_BIN | sed -e 's/[^0-9]//g' -e 's/^[0-9]*\([0-9]\{5\}\).*/\1/g' -e 's/^[567890]/4/')
+    OPENCODE_HOST_PORT=$(echo "$SAFE_BRANCH" | $CKSUM_BIN | sed -e 's/[^0-9]//g' -e 's/^[0-9]*\([0-9]\{5\}\).*/\1/g' -e 's/^[0-9]/4/')
     # OPENCODE_HOST_PORT is used in devcontainer.json used by devcontainer up to pin to a consistent host port per branch
     # and bind to localhost/127.0.0.1 which is safter than --publish-all
     export OPENCODE_HOST_PORT
     echo "OPENCODE_HOST_PORT=$OPENCODE_HOST_PORT"
+    CODER_HOST_PORT=$(echo "$SAFE_BRANCH" | $CKSUM_BIN | sed -e 's/[^0-9]//g' -e 's/^[0-9]*\([0-9]\{5\}\).*/\1/g' -e 's/^[0-9]/3/')
+    # CODER_HOST_PORT is used in devcontainer.json used by devcontainer up to pin to a consistent host port per branch
+    # and bind to localhost/127.0.0.1 which is safter than --publish-all
+    export CODER_HOST_PORT
+    echo "CODER_HOST_PORT=$CODER_HOST_PORT"
 
     CONTAINER_ID=$(_devcontainer up $DEVCONTAINER_UP_ARGS --workspace-folder "$DESTINATION_FOLDER" --remove-existing-container | jq -r '.containerId')
     echo "Starting OpenCode in devcontainer"
     set -x
     _devcontainer exec $DEVCONTAINER_UP_ARGS --workspace-folder "$DESTINATION_FOLDER" -- bash /opencode-serve.sh &
     set +x
-    HOST_PORT=$(docker inspect "$CONTAINER_ID" | jq -r '.[].HostConfig.PortBindings."4096/tcp".[].HostPort')
-    OPENCODE_URL="http://127.0.0.1:$HOST_PORT"
+    # HOST_PORT=$(docker inspect "$CONTAINER_ID" | jq -r '.[].HostConfig.PortBindings."4096/tcp".[].HostPort')
+    OPENCODE_URL="http://127.0.0.1:$OPENCODE_HOST_PORT"
+    CODER_URL="http://127.0.0.1:$CODER_HOST_PORT"
 
     echo "Checking port..."
     if type wget &>/dev/null; then
@@ -160,6 +166,7 @@ new() {
     echo "Opening browser..."
     set -x
     open "$OPENCODE_URL"
+    open "$CODER_URL"
     set +x
   fi
 }
