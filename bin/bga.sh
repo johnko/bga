@@ -77,7 +77,7 @@ _devcontainer() {
 
 _check_and_open_url() {
   URL="$1"
-  echo "Checking port..."
+  echo "Checking port for $URL"
   if type wget &>/dev/null; then
     CURL_BIN="wget --timeout=5 --quiet --output-document=-"
   elif type curl &>/dev/null; then

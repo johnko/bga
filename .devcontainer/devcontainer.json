@@ -8,7 +8,8 @@
       "disableTelemetry": true,
       "disableUpdateCheck": true,
       "disableWorkspaceTrust": true,
-      "host": "0.0.0.0"
+      "host": "0.0.0.0",
+      "workspace": "/workspaces"
     }
   },
   "initializeCommand": "docker pull --platform=linux/amd64 mcr.microsoft.com/devcontainers/universal:5-noble",
