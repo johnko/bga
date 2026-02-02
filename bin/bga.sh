@@ -75,6 +75,32 @@ _devcontainer() {
   set +x
 }
 
+_check_and_open_url() {
+  URL="$1"
+  echo "Checking port..."
+  if type wget &>/dev/null; then
+    CURL_BIN="wget --timeout=5 --quiet --output-document=-"
+  elif type curl &>/dev/null; then
+    CURL_BIN="curl --connect-timeout 5 --fail --silent --output -"
+  fi
+  set +e
+  CURL_EXIT_CODE=500
+  for _ in $(seq 1 60); do
+    # echo "CURL_EXIT_CODE=$CURL_EXIT_CODE"
+    if [[ $CURL_EXIT_CODE != "0" ]]; then
+      $CURL_BIN "$URL" &>/dev/null
+      CURL_EXIT_CODE=$?
+      sleep 1
+    fi
+  done
+  set -e
+
+  echo "Opening browser to $URL"
+  set -x
+  open "$URL"
+  set +x
+}
+
 new() {
   set +u
   DESTINATION_FOLDER="$3"
@@ -136,38 +162,18 @@ new() {
     export CODER_HOST_PORT
     echo "CODER_HOST_PORT=$CODER_HOST_PORT"
 
-    CONTAINER_ID=$(_devcontainer up $DEVCONTAINER_UP_ARGS --workspace-folder "$DESTINATION_FOLDER" --remove-existing-container | jq -r '.containerId')
+    # CONTAINER_ID=$()
+    _devcontainer up $DEVCONTAINER_UP_ARGS --workspace-folder "$DESTINATION_FOLDER" --remove-existing-container | jq -r '.containerId'
     echo "Starting OpenCode in devcontainer"
     set -x
     _devcontainer exec $DEVCONTAINER_UP_ARGS --workspace-folder "$DESTINATION_FOLDER" -- bash /opencode-serve.sh &
     set +x
-    # HOST_PORT=$(docker inspect "$CONTAINER_ID" | jq -r '.[].HostConfig.PortBindings."4096/tcp".[].HostPort')
+    # DETECTED_PORT=$(docker inspect "$CONTAINER_ID" | jq -r '.[].HostConfig.PortBindings."4096/tcp".[].HostPort')
     OPENCODE_URL="http://127.0.0.1:$OPENCODE_HOST_PORT"
     CODER_URL="http://127.0.0.1:$CODER_HOST_PORT"
 
-    echo "Checking port..."
-    if type wget &>/dev/null; then
-      CURL_BIN="wget --timeout=5 --quiet --output-document=-"
-    elif type curl &>/dev/null; then
-      CURL_BIN="curl --connect-timeout 5 --fail --silent --output -"
-    fi
-    set +e
-    CURL_EXIT_CODE=500
-    for _ in $(seq 1 60); do
-      # echo "CURL_EXIT_CODE=$CURL_EXIT_CODE"
-      if [[ $CURL_EXIT_CODE != "0" ]]; then
-        $CURL_BIN "$OPENCODE_URL" &>/dev/null
-        CURL_EXIT_CODE=$?
-        sleep 1
-      fi
-    done
-    set -e
-
-    echo "Opening browser..."
-    set -x
-    open "$OPENCODE_URL"
-    open "$CODER_URL"
-    set +x
+    _check_and_open_url "$OPENCODE_URL"
+    _check_and_open_url "$CODER_URL"
   fi
 }
 
