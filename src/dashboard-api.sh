@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # renovate: datasource=python-version depName=python packageName=python
-PYTHON_VERSION=3.13.10
+PYTHON_VERSION=3.14.2
 
 mise exec python@$PYTHON_VERSION -- pip install "fastapi[standard]"
 
