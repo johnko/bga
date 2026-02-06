@@ -39,6 +39,7 @@ class SafePort(BaseModel):
     host_ip: str
     host_port: int
     container_port: int
+    protocol: str
 
 
 class SafeLabels(BaseModel):
