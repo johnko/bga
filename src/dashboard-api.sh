@@ -8,5 +8,5 @@ mise exec python@$PYTHON_VERSION -- pip install "fastapi[standard]"
 
 WORKDIR=$(dirname "$0")
 pushd "$WORKDIR"
-  mise exec python@$PYTHON_VERSION -- fastapi dev dashboard-api.py
+mise exec python@$PYTHON_VERSION -- fastapi dev dashboard-api.py
 popd
