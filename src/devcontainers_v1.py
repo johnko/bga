@@ -38,6 +38,7 @@ def dockerpsjson():
 class SafePort(BaseModel):
     host_ip: str
     host_port: int
+    container_port: int
 
 
 class SafeLabels(BaseModel):
