@@ -35,14 +35,14 @@ def dockerpsjson():
     return dockerpsobject
 
 
-class SafePort(BaseModel):
+class Port(BaseModel):
     host_ip: str
     host_port: int
     container_port: int
     protocol: str
 
 
-class SafeLabels(BaseModel):
+class Labels(BaseModel):
     dev__containers__id: str = Field(validation_alias="dev.containers.id")
     dev__containers__release: str = Field(validation_alias="dev.containers.release")
     dev__containers__source: str = Field(validation_alias="dev.containers.source")
@@ -63,8 +63,8 @@ class SafeLabels(BaseModel):
 class Devcontainer(BaseModel):
     Id: str
     Names: list[str]
-    Ports: list[SafePort]
-    Labels: SafeLabels
+    Ports: list[Port]
+    Labels: Labels
 
 
 @router.get("")
