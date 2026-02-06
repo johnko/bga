@@ -35,7 +35,7 @@ def dockerpsjson():
     return dockerpsobject
 
 
-class Port(BaseModel):
+class PublishedPort(BaseModel):
     host_ip: str
     host_port: int
     container_port: int
@@ -63,7 +63,7 @@ class Labels(BaseModel):
 class Devcontainer(BaseModel):
     Id: str
     Names: list[str]
-    Ports: list[Port]
+    Ports: list[PublishedPort]
     Labels: Labels
 
 
