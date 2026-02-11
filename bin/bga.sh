@@ -176,7 +176,7 @@ new() {
     echo "CODER_HOST_PORT=$CODER_HOST_PORT"
 
     # CONTAINER_ID=$()
-    _devcontainer up $DEVCONTAINER_UP_ARGS --workspace-folder "$DESTINATION_FOLDER" --remove-existing-container | jq -r '.containerId'
+    _devcontainer up $DEVCONTAINER_UP_ARGS --workspace-folder "$DESTINATION_FOLDER" --remove-existing-container --build-no-cache | jq -r '.containerId'
     # DETECTED_PORT=$(docker inspect "$CONTAINER_ID" | jq -r '.[].HostConfig.PortBindings."4096/tcp".[].HostPort')
     OPENCODE_URL="http://127.0.0.1:$OPENCODE_HOST_PORT"
     CODER_URL="http://127.0.0.1:$CODER_HOST_PORT"
