@@ -14,7 +14,8 @@ Your project needs:
 - `opencode.jsonc` or `opencode.json` file you can customize
 
 Your machine needs:
-- docker
+- podman (or docker)
+- podman-desktop (or docker-desktop)
 - jq
 - mise
 

@@ -9,6 +9,7 @@ DEVCONTAINERS_VERSION=v0.81.0
 
 DEPENDENCIES="
 docker
+podman
 jq
 mise
 "
@@ -49,9 +50,6 @@ setup() {
   for tool in $DEPENDENCIES; do
     THIS_ERROR=$(_check_command_exists "$tool")
     if [[ $THIS_ERROR != "0" ]]; then
-      if [[ $tool == "docker" ]]; then
-        echo "ERROR: Please install Podman https://podman.io/ or Docker https://www.docker.com/"
-      fi
       if [[ $tool == "jq" ]]; then
         echo "ERROR: Please install jq https://jqlang.org/"
       fi
@@ -59,15 +57,21 @@ setup() {
         echo "ERROR: Please install Mise https://mise.jdx.dev/"
       fi
     fi
-    ANY_ERROR=$((ANY_ERROR + THIS_ERROR))
   done
   echo
-  docker version || ANY_ERROR=$((ANY_ERROR + 1))
   jq --version || ANY_ERROR=$((ANY_ERROR + 1))
   mise version || ANY_ERROR=$((ANY_ERROR + 1))
   set -x
   mise exec node@$NODE_VERSION -- npm install --global @devcontainers/cli@$DEVCONTAINERS_VERSION
   set +x
+  if ! docker version; then
+    ANY_ERROR=$((ANY_ERROR + 1))
+    if ! podman version; then
+      echo "ERROR: Please install Podman https://podman.io/ or Docker https://www.docker.com/"
+    else
+      echo "ERROR: 'docker' not found. Please: ln -s $(which podman) $(dirname "$(which podman)")/docker"
+    fi
+  fi
   if [[ $ANY_ERROR != "0" ]]; then
     exit $ANY_ERROR
   fi
@@ -164,19 +168,19 @@ new() {
     elif type sha1sum &>/dev/null; then
       CKSUM_BIN="sha1sum"
     fi
-    OPENCODE_HOST_PORT=$(echo "$SAFE_BRANCH" | $CKSUM_BIN | sed -e 's/[^0-9]//g' -e 's/^[0-9]*\([0-9]\{5\}\).*/\1/g' -e 's/^[0-9]/4/')
+    OPENCODE_HOST_PORT=$(echo "$DESTINATION_FOLDER/$SAFE_BRANCH" | $CKSUM_BIN | sed -e 's/[^0-9]//g' -e 's/^[0-9]*\([0-9]\{5\}\).*/\1/g' -e 's/^[0-9]/4/')
     # OPENCODE_HOST_PORT is used in devcontainer.json used by devcontainer up to pin to a consistent host port per branch
     # and bind to localhost/127.0.0.1 which is safter than --publish-all
     export OPENCODE_HOST_PORT
     echo "OPENCODE_HOST_PORT=$OPENCODE_HOST_PORT"
-    CODER_HOST_PORT=$(echo "$SAFE_BRANCH" | $CKSUM_BIN | sed -e 's/[^0-9]//g' -e 's/^[0-9]*\([0-9]\{5\}\).*/\1/g' -e 's/^[0-9]/3/')
+    CODER_HOST_PORT=$(echo "$DESTINATION_FOLDER/$SAFE_BRANCH" | $CKSUM_BIN | sed -e 's/[^0-9]//g' -e 's/^[0-9]*\([0-9]\{5\}\).*/\1/g' -e 's/^[0-9]/3/')
     # CODER_HOST_PORT is used in devcontainer.json used by devcontainer up to pin to a consistent host port per branch
     # and bind to localhost/127.0.0.1 which is safter than --publish-all
     export CODER_HOST_PORT
     echo "CODER_HOST_PORT=$CODER_HOST_PORT"
 
-    # CONTAINER_ID=$()
-    _devcontainer up $DEVCONTAINER_UP_ARGS --workspace-folder "$DESTINATION_FOLDER" --remove-existing-container --build-no-cache | jq -r '.containerId'
+    _devcontainer up $DEVCONTAINER_UP_ARGS --workspace-folder "$DESTINATION_FOLDER" --remove-existing-container --build-no-cache
+    # CONTAINER_ID=$( ... | jq -r '.containerId')
     # DETECTED_PORT=$(docker inspect "$CONTAINER_ID" | jq -r '.[].HostConfig.PortBindings."4096/tcp".[].HostPort')
     OPENCODE_URL="http://127.0.0.1:$OPENCODE_HOST_PORT"
     CODER_URL="http://127.0.0.1:$CODER_HOST_PORT"
@@ -191,7 +195,7 @@ list() {
   echo
   (
     echo "NAME FOLDER OPENCODE_URL CODER_URL"
-    JSON_ALL_DEVCONTAINERS=$(docker ps --filter 'label=devcontainer.local_folder' --format '{{json}}')
+    JSON_ALL_DEVCONTAINERS=$(docker ps --filter 'label=devcontainer.local_folder' --format '{{json .}}')
     for id in $(echo "$JSON_ALL_DEVCONTAINERS" | jq -r '.[].Id'); do
       # echo "# $id"
       ITEM_NAME=$(echo "$JSON_ALL_DEVCONTAINERS" | jq -r ".[] | select(.Id == \"$id\") | .Names[0]")
