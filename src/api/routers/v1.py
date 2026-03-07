@@ -6,7 +6,7 @@ from pydantic import BaseModel, Field
 
 
 router = APIRouter(
-    prefix="/devcontainers",
+    prefix="/v1/devcontainers",
     tags=["devcontainers"],
     responses={404: {"description": "Not found"}},
 )
@@ -79,5 +79,4 @@ def get_devcontainer_details(devcontainer_id: str) -> Devcontainer:
     for item in result_all:
         if item["Id"] == devcontainer_id:
             return item
-    # throw 404 Not Found if we didn't return by now
     raise HTTPException(status_code=404, detail="Item not found")
