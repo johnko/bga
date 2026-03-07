@@ -10,6 +10,10 @@ RUN install -d -o codespace /home/codespace/.local/share/code-server/User
 COPY code-server-User-settings.json /home/codespace/.local/share/code-server/User/settings.json
 RUN chown -R codespace /home/codespace/.local
 
+RUN install -d -o codespace /home/codespace/.config/opencode/
+COPY ./opencode.jsonc /home/codespace/.config/opencode/
+RUN chown -R codespace /home/codespace/.config
+
 # RUN install -d -o codespace /home/codespace/.opencode/plugin/
 # COPY ./opencode-background-agents/src/plugin/ /home/codespace/.opencode/plugin/
 # RUN chown -R codespace /home/codespace/.opencode
