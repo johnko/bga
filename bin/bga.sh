@@ -195,11 +195,11 @@ list() {
   echo
   (
     echo "NAME FOLDER OPENCODE_URL CODER_URL"
-    JSON_ALL_DEVCONTAINERS=$(docker ps --filter 'label=devcontainer.local_folder' --format '{{json .}}')
+    JSON_ALL_DEVCONTAINERS=$(docker ps --filter 'label=devcontainer.local_folder' --format '{{json}}')
     for id in $(echo "$JSON_ALL_DEVCONTAINERS" | jq -r '.[].Id'); do
       # echo "# $id"
       ITEM_NAME=$(echo "$JSON_ALL_DEVCONTAINERS" | jq -r ".[] | select(.Id == \"$id\") | .Names[0]")
-      ITEM_FOLDER=$(echo "$JSON_ALL_DEVCONTAINERS" | jq -r ".[] | select(.Id == \"$id\") | .Labels.\"devcontainer.local_folder\"")
+      ITEM_FOLDER=$(echo "$JSON_ALL_DEVCONTAINERS" | jq -r ".[] | select(.Id == \"$id\") | .Labels.\"devcontainer.local_folder\"" | sed "s,^$HOME,~,")
       ITEM_OPENCODE_HOST_PORT=$(echo "$JSON_ALL_DEVCONTAINERS" | jq -r ".[] | select(.Id == \"$id\") | .Ports[] | select(.container_port == 4096) | .host_port")
       ITEM_CODER_HOST_PORT=$(echo "$JSON_ALL_DEVCONTAINERS" | jq -r ".[] | select(.Id == \"$id\") | .Ports[] | select(.container_port == 8080) | .host_port")
       ITEM_OPENCODE_URL="http://127.0.0.1:$ITEM_OPENCODE_HOST_PORT"
