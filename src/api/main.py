@@ -29,4 +29,4 @@ async def get_devcontainer_details(devcontainer_id: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-app.mount("/dashboard/", StaticFiles(directory="web"), name="dashboard")
+app.mount("/dashboard", StaticFiles(directory="../web"), name="dashboard")
