@@ -12,15 +12,7 @@
   "provider": {
     "ollama": {
       "models": {
-        "deepseek-r1:32b-qwen-distill-q4_K_M": {
-          "reasoning": true,
-          "tool_call": true
-        },
-        "llama3.3:70b-instruct-q4_K_M": {
-          "reasoning": true,
-          "tool_call": true
-        },
-        "qwen2.5-coder:32b-instruct-q4_K_M": {
+        "qwen3.5:9b-q4_K_M": {
           "reasoning": true,
           "tool_call": true
         },
