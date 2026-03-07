@@ -33,7 +33,7 @@ function renderContainerList(containers) {
 function renderMeta(container) {
     const labels = container.Labels || {};
     return [
-        renderLabel('Id', container.Id),
+        renderLabel('Id', container.Id.substr(0, 12)),
         renderLabel('Name', container.Names?.[0]),
         renderLabel('Port', extractPort(container.Ports)),
         renderLabel('Source', labels.dev__containers__source) || '',
@@ -59,6 +59,7 @@ function sanitize(str) {
 
 async function showContainerDetails(containerId) {
     const detailDiv = document.getElementById('container-detail');
+    const containerDiv = document.getElementById('container-list');
     containerDiv.style.display = 'none';
     detailDiv.style.display = 'block';
 
@@ -75,6 +76,7 @@ async function showContainerDetails(containerId) {
 }
 
 function renderDetailView(container) {
+    const detailDiv = document.getElementById('container-detail');
     const labels = container.Labels || {};
     const html = `
         <h2>${sanitize(container.Names?.[0] || 'Unnamed')}</h2>
@@ -102,7 +104,7 @@ function renderDetailView(container) {
                 <h4>${labels.dev__containers__source ? 'Deployment' : 'Info'}</h4>
                 ${container.Labels?.['dev.containers.source'] ?
                     renderMetaRow('Source', labels.dev__containers__source).concat(
-                        renderMetaRow('Variant', labels.dev__containers__variant)).join('', '') : ''}.concat(
+                        renderMetaRow('Variant', labels.dev__containers__variant)) : ''}.concat(
                     renderMetaRow('Release', labels.dev__containers__release || '-'))
             </div>
         </div>
