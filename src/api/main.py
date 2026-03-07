@@ -4,25 +4,6 @@ from fastapi.staticfiles import StaticFiles
 
 app = FastAPI()
 
-
-def render_html(page_content: str, title: str) -> str:
-    return f"""<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{title}</title>
-    <link rel="stylesheet" href="/dashboard/styles.css">
-</head>
-<body>
-    <div id="app">
-        {page_content}
-    </div>
-    <script src="/dashboard/app.js"></script>
-</body>
-</html>"""
-
-
 @app.get("/")
 def index():
     return RedirectResponse(url="/dashboard/")
@@ -48,4 +29,4 @@ async def get_devcontainer_details(devcontainer_id: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-app.mount("/dashboard", StaticFiles())
+app.mount("/dashboard/", StaticFiles(directory="web"), name="dashboard")
