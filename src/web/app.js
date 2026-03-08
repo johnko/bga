@@ -1,10 +1,7 @@
 const API_BASE = '/v1/devcontainers';
 
 async function refreshContainers() {
-    const detailDiv = document.getElementById('container-detail');
     const containerDiv = document.getElementById('container-list');
-    containerDiv.style.display = 'grid';
-    detailDiv.style.display = 'none';
     try {
         const response = await fetch(API_BASE);
         if (!response.ok) throw new Error('Failed to load containers');
@@ -13,9 +10,12 @@ async function refreshContainers() {
         renderContainerList(data.containers || data);
     } catch (error) {
         console.error('Error:', error.message);
-        document.getElementById('container-list').innerHTML =
+        containerDiv.innerHTML =
             '<div class="no-containers">Error loading containers. Please refresh the page.</div>';
     }
+    const detailDiv = document.getElementById('container-detail');
+    detailDiv.style.display = 'none';
+    containerDiv.style.display = 'grid';
 }
 
 function renderContainerList(containers) {
@@ -83,10 +83,6 @@ function sanitize(str) {
 
 async function showContainerDetails(containerId) {
     const detailDiv = document.getElementById('container-detail');
-    const containerDiv = document.getElementById('container-list');
-    containerDiv.style.display = 'none';
-    detailDiv.style.display = 'grid';
-
     try {
         const response = await fetch(`${API_BASE}/${encodeURIComponent(containerId)}`);
         if (!response.ok) throw new Error('Container not found');
@@ -97,6 +93,9 @@ async function showContainerDetails(containerId) {
         console.error('Error:', error.message);
         detailDiv.innerHTML = '<div class="no-containers">Error loading container details.</div>';
     }
+    const containerDiv = document.getElementById('container-list');
+    containerDiv.style.display = 'none';
+    detailDiv.style.display = 'grid';
 }
 
 function renderDetailView(container) {
@@ -135,7 +134,7 @@ function renderDetailView(container) {
                                     ) }</span>
                                 <span class="meta-value">${port.host_ip}:${port.host_port}/${port.protocol} -> ${port.container_port}/${port.protocol}</span>
                             </div>
-                        `).join('') : 'No ports exposed'}
+                        `).join('') : '-'}
                 </div>
             </div>
 
