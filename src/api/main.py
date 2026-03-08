@@ -85,7 +85,9 @@ async def proxy_code_server_websocket(path: str, websocket: websockets.WebSocket
     host_port = container.get("codeserver_proxy", {}).get("host_port")
 
     # Extract query parameters from original websocket URL and forward headers
-    ws_query = dict(websocket.query_params) if hasattr(websocket, 'query_params') else {}
+    ws_query = (
+        dict(websocket.query_params) if hasattr(websocket, "query_params") else {}
+    )
     ws_headers = {key: value for key, value in websocket.headers.items()}
 
     target_url = f"ws://127.0.0.1:{host_port}"
@@ -102,13 +104,15 @@ async def proxy_code_server_websocket(path: str, websocket: websockets.WebSocket
 
     try:
         # Build target URL with query parameters
-        encoded_query = "&".join(f"{k}={v}" for k, v in ws_query.items()) if ws_query else ""
+        encoded_query = (
+            "&".join(f"{k}={v}" for k, v in ws_query.items()) if ws_query else ""
+        )
         if encoded_query:
             target_url = f"{target_url}?{encoded_query}"
-        
+
         # For websockets that support headers, create a dict of headers to forward
         websocket_headers = None  # Pass custom headers if supported
-        
+
         async with websockets.connect(target_url) as ws_client:
             while True:
                 data = await websocket.receive()
@@ -216,5 +220,6 @@ async def proxy_code_server(path: str, request: Request):
     except Exception as e:
         error_msg = str(e)
         raise HTTPException(status_code=502, detail=error_msg)
+
 
 app.mount("/dashboard", StaticFiles(directory="web", html=True), name="dashboard")
