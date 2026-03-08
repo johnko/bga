@@ -115,7 +115,18 @@ function renderDetailView(container) {
                     ${container.Ports?.length ?
                         container.Ports.map(port => `
                             <div class="meta-row">
-                                <span class="meta-label">${ ((port.container_port === 4096) ? 'OpenCode' : ((port.container_port === 8080) ? 'Coder code-server IDE' : '')) }</span>
+                                <span class="meta-label">${
+                                    (
+                                        (
+                                            port.container_port === 4096 &&
+                                            labels["devcontainer.metadata"].match(/opencode/)
+                                        ) ? 'OpenCode' : (
+                                            (
+                                                port.container_port === 8080 &&
+                                                labels["devcontainer.metadata"].match(/ghcr.io\/coder\/devcontainer-features\/code-server/)
+                                            ) ? 'Coder code-server IDE' : ''
+                                        )
+                                    ) }</span>
                                 <span class="meta-value">${port.host_ip}:${port.host_port}/${port.protocol} -> ${port.container_port}/${port.protocol}</span>
                             </div>
                         `).join('') : 'No ports exposed'}
