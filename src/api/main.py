@@ -3,6 +3,7 @@ from fastapi.responses import HTMLResponse, RedirectResponse, Response
 from fastapi.staticfiles import StaticFiles
 
 import io
+import re
 
 app = FastAPI()
 
@@ -74,7 +75,7 @@ async def get_devcontainer_details(devcontainer_id: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.get("/proxy/codeserver/{path}")
+@app.get("/proxy/codeserver/{path:path}")
 async def proxy_code_server(path: str, request: Request):
     """Proxy requests to code-server container for the web interface"""
     devcontainer_id = path.split("/")[0]
@@ -109,12 +110,40 @@ async def proxy_code_server(path: str, request: Request):
         with urllib.request.urlopen(req, timeout=120) as response:
             raw_bytes = response.read()
             encoding = response.headers.get_content_charset() or "utf-8"
-            decoded_string = raw_bytes.decode(encoding)
-            modified_string = decoded_string.replace(
-                "/proxy/codeserver/devcontainer_id", ""
-            )
+            if not proxied_path.endswith(
+                (
+                    ".ico",
+                    ".png",
+                    ".ttf",
+                )
+            ):
+                decoded_string = raw_bytes.decode(encoding)
+                response_content = (
+                    decoded_string.replace(
+                        'src="s', f'src="/proxy/codeserver/{devcontainer_id}/s'
+                    )
+                    .replace('href="./', f'href="/proxy/codeserver/{devcontainer_id}/')
+                    .replace('href="s', f'href="/proxy/codeserver/{devcontainer_id}/s')
+                )
+            else:
+                response_content = raw_bytes
+            response_headers = response.headers
+            if response_headers["Content-Security-Policy"]:
+                # print(response_headers["Content-Security-Policy"])
+                temp = re.sub(
+                    r"script-src[^;]+;",
+                    "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+                    response_headers["Content-Security-Policy"].replace(
+                        "script-src 'self'", "script-src 'self' 'unsafe-inline'"
+                    ),
+                )
+                # print(temp)
+                del response_headers["Content-Security-Policy"]
+                response_headers["Content-Security-Policy"] = temp
+                print(response_headers["Content-Security-Policy"])
             return Response(
-                modified_string,
+                response_content,
+                headers=response_headers,
                 status_code=response.status,
             )
     except Exception as e:
