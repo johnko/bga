@@ -29,7 +29,7 @@ function renderContainerList(containers) {
     containerDiv.innerHTML = containers.map(container => `
         <div class="container-card" onclick="showContainerDetails('${container.Id}')">
             ${renderStateBadge(container)}
-            <h3>${sanitize(container.Names?.[0] || 'unnamed')}</h3>
+            <h3>${sanitize((container.Names || ['unnamed']).sort()[0])}</h3>
             ${renderMeta(container)}
         </div>
     `).join('');
@@ -57,7 +57,7 @@ function renderMeta(container) {
     return [
         renderLabel('Status', container.Status, "float:right; background:none;"),
         renderLabel('Id', container.Id.substr(0, 12)),
-        renderLabel('Name', container.Names?.[0]),
+        renderLabel('Names', container.Names.join('<br/>')),
         renderLabel('Local Folder', labels["devcontainer.local_folder"]) || '',
         renderLabel('Ports', extractPorts(container.Ports)),
     ].join('');
@@ -109,7 +109,7 @@ function renderDetailView(container) {
             <div class="meta-section">
                 <h4>Info</h4>
                 ${renderMetaRow('ID', container.Id.substr(0, 12))}
-                ${renderMetaRow('Name', container.Names?.[0] || '-')}
+                ${renderMetaRow('Names', container.Names.join('<br/>') || '-')}
                 ${renderMetaRow('Local Folder', labels["devcontainer.local_folder"])}
                 ${renderMetaRow('State', container.State)}
                 ${renderMetaRow('Status', container.Status)}
