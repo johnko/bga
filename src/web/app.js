@@ -1,6 +1,10 @@
 const API_BASE = '/v1/devcontainers';
 
 async function refreshContainers() {
+    const detailDiv = document.getElementById('container-detail');
+    const containerDiv = document.getElementById('container-list');
+    containerDiv.style.display = 'grid';
+    detailDiv.style.display = 'none';
     try {
         const response = await fetch(API_BASE);
         if (!response.ok) throw new Error('Failed to load containers');
@@ -24,32 +28,50 @@ function renderContainerList(containers) {
 
     containerDiv.innerHTML = containers.map(container => `
         <div class="container-card" onclick="showContainerDetails('${container.Id}')">
-            <h3>${sanitize(container.Names?.[0] || 'Unnamed')}</h3>
+            ${renderStateBadge(container)}
+            <h3>${sanitize(container.Names?.[0] || 'unnamed')}</h3>
             ${renderMeta(container)}
         </div>
     `).join('');
 }
 
+function renderStateBadge(container) {
+    const state = container.State || 'unknown';
+    let emoji = '';
+    let style = '';
+    if (['running'].includes(state)) {
+        emoji = '🐎';
+        style = 'background:green;';
+    } else if (['stopped'].includes(state)) {
+        emoji = '🛑';
+    } else {
+        emoji = '❓';
+    }
+    return `<div class="state-badge" style="${style}">${emoji} <span>${state}</span></div>`;
+}
+
 function renderMeta(container) {
     const labels = container.Labels || {};
     return [
-        renderLabel('Id', container.Id.substr(0, 12)),
+        renderLabel('Status', container.Status, "float:right; background:none;"),
+        renderLabel('Id', container.Id.substr(0, 12), "float:right; background:none;"),
         renderLabel('Name', container.Names?.[0]),
-        renderLabel('Port', extractPort(container.Ports)),
-        renderLabel('Source', labels.dev__containers__source) || '',
-        renderLabel('Variant', labels.dev__containers__variant) || ''
+        renderLabel('Local Folder', labels["devcontainer.local_folder"]) || '',
+        renderLabel('Ports', extractPorts(container.Ports)),
     ].join('');
 }
 
-function renderLabel(label, value) {
+function renderLabel(label, value, style="") {
     return value ?
-        `<div class="meta-item"><span>${label}</span>${value}</div>` : '';
+        `<div class="meta-item" style="${style}"><span>${label}</span>${value}</div>` : '';
 }
 
-function extractPort(ports) {
+function extractPorts(ports) {
     if (!ports || ports.length === 0) return '';
-    const port = ports.find(p => p.protocol === 'tcp');
-    return port ? `Port ${port.host_port}:->${port.container_port}` : '';
+    const port = ports.map(port => `
+        ${port.host_ip}:${port.host_port}/${port.protocol} -> ${port.container_port}/${port.protocol}
+    `).join('<br/>');
+    return port;
 }
 
 function sanitize(str) {
@@ -61,7 +83,7 @@ async function showContainerDetails(containerId) {
     const detailDiv = document.getElementById('container-detail');
     const containerDiv = document.getElementById('container-list');
     containerDiv.style.display = 'none';
-    detailDiv.style.display = 'block';
+    detailDiv.style.display = 'grid';
 
     try {
         const response = await fetch(`${API_BASE}/${encodeURIComponent(containerId)}`);
@@ -84,32 +106,30 @@ function renderDetailView(container) {
         <div class="detail-meta">
             <div class="meta-section">
                 <h4>Identification</h4>
-                ${[renderMetaRow('ID', container.Id), renderMetaRow('Name', container.Names?.[0] || '-')].join('')}
+                ${[renderMetaRow('ID', container.Id.substr(0, 12)), renderMetaRow('Name', container.Names?.[0] || '-')].join('')}
                 </div>
 
             <div class="meta-section">
                 <h4>Ports</h4>
-                <div style="display: grid; gap: 8px;">
+                <div>
                     ${container.Ports?.length ?
                         container.Ports.map(port => `
                             <div class="meta-row">
-                                <span class="meta-label">${port.protocol}</span>
-                                <span class="meta-value">${port.host_ip}:${port.host_port} -> ${port.container_port}</span>
+                                <span class="meta-label">${ ((port.container_port === 4096) ? 'OpenCode' : ((port.container_port === 8080) ? 'Coder code-server IDE' : '')) }</span>
+                                <span class="meta-value">${port.host_ip}:${port.host_port}/${port.protocol} -> ${port.container_port}/${port.protocol}</span>
                             </div>
                         `).join('') : 'No ports exposed'}
                 </div>
             </div>
 
             <div class="meta-section">
-                <h4>${labels.dev__containers__source ? 'Deployment' : 'Info'}</h4>
-                ${container.Labels?.['dev.containers.source'] ?
-                    renderMetaRow('Source', labels.dev__containers__source).concat(
-                        renderMetaRow('Variant', labels.dev__containers__variant)) : ''}.concat(
-                    renderMetaRow('Release', labels.dev__containers__release || '-'))
+                <h4>Info</h4>
+                ${renderMetaRow('Local Folder', labels["devcontainer.local_folder"])}
+                ${renderMetaRow('State', container.State)}
+                ${renderMetaRow('Status', container.Status)}
             </div>
         </div>
     `;
-
     if (!container.Labels?.['dev.containers.source']) {
         html = `<div class="no-containers">No devcontainers found with matching ID.</div>`;
     }
