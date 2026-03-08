@@ -60,7 +60,8 @@ function renderMeta(container) {
         renderLabel('Names', container.Names.join('<br/>')),
         renderLabel('Folder', labels["devcontainer.local_folder"]) || '',
         renderLabel('Ports', extractPorts(container.Ports) || '-'),
-        renderLabel('', isOpencodeOrCodeserverURL(container)),
+        renderLabel('', ['&nbsp;', isOpencodeOrCodeserverURL(container)].join('')),
+        renderLabel('', '&nbsp;'),
     ].join('');
 }
 
@@ -82,24 +83,27 @@ function isOpencodeOrCodeserverURL(container) {
     if (container.Ports) {
         const buttons = container.Ports.map(port => {
             if (port.protocol === 'tcp') {
+                let link_class = '';
                 let link_text = '';
                 if (
                     port.container_port === 4096 &&
                     labels["devcontainer.metadata"].match(/opencode/)
                 ) {
+                    link_class = 'button-opencode'
                     link_text = 'OpenCode';
                 } else if (
                     port.container_port === 8080 &&
                     labels["devcontainer.metadata"].match(/ghcr.io\/coder\/devcontainer-features\/code-server/)
                 ) {
+                    link_class = 'button-codeserver'
                     link_text = 'Coder code-server IDE';
                 }
                 if (link_text) {
-                    return `<a target="_blank" href="http://${port.host_ip}:${port.host_port}">${link_text}</a>`
+                    return `<a class="button ${link_class}" target="_blank" href="http://${port.host_ip}:${port.host_port}">${link_text}</a>`
                 }
             }
         });
-        return buttons.join('<br/>');
+        return buttons.join(' ');
     }
 }
 
