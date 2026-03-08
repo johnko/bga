@@ -1,9 +1,11 @@
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.responses import HTMLResponse, RedirectResponse, Response
 from fastapi.staticfiles import StaticFiles
+import urllib.request
 
 import io
 import re
+import websockets
 
 app = FastAPI()
 
@@ -78,7 +80,6 @@ async def get_devcontainer_details(devcontainer_id: str):
 @app.websocket("/proxy/codeserver/{path:path}")
 async def proxy_code_server_websocket(path: str, websocket: websockets.WebSocketServer):
     """Proxy WebSocket connections to code-server container"""
-    import websockets
 
     devcontainer_id = path.split("/")[0]
     container = await get_devcontainer_details(devcontainer_id)
@@ -93,11 +94,6 @@ async def proxy_code_server_websocket(path: str, websocket: websockets.WebSocket
     target_url = f"ws://127.0.0.1:{host_port}"
     print(f"websocket={target_url}")
 
-    if devcontainer_id and "/proxy/codeserver/" in path:
-        proxied_path = path.replace(f"/proxy/codeserver/{devcontainer_id}", "")
-    else:
-        proxied_path = ""
-
     # For websocket connection, we need to handle the raw upgrade differently
     # Since urllib doesn't support websockets well, we'll use a different approach
     # by opening in a subprocess if needed or using a dedicated proxy
@@ -110,10 +106,9 @@ async def proxy_code_server_websocket(path: str, websocket: websockets.WebSocket
         if encoded_query:
             target_url = f"{target_url}?{encoded_query}"
 
-        # For websockets that support headers, create a dict of headers to forward
-        websocket_headers = None  # Pass custom headers if supported
-
-        async with websockets.connect(target_url) as ws_client:
+        async with websockets.connect(
+            target_url, additional_headers=ws_headers
+        ) as ws_client:
             while True:
                 data = await websocket.receive()
                 try:
@@ -131,17 +126,6 @@ async def proxy_code_server_websocket(path: str, websocket: websockets.WebSocket
                     break
     except Exception as e:
         print(f"WebSocket proxy error: {e}")
-        # Fallback to regular http request for initial connection
-        if request.method == "GET":
-            try:
-                import urllib.request
-
-                print((target_url + proxied_path))
-                req = urllib.request.Request(target_url + proxied_path)
-                with urllib.request.urlopen(req, timeout=120) as response:
-                    return Response(content="Error proxying websocket connection")
-            except Exception:
-                pass
 
     raise HTTPException(status_code=502, detail=f"WebSocket proxy error: {str(e)}")
 
@@ -162,7 +146,6 @@ async def proxy_code_server(path: str, request: Request):
     # print(target_url)
 
     try:
-        import urllib.request
 
         headers = {}
         body = None
