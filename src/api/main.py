@@ -110,9 +110,7 @@ async def proxy_code_server_websocket(path: str, client_websocket: WebSocket):
 
     try:
         # Connect to the external WebSocket server
-        async with ws_connect(
-            target_url, additional_headers=ws_headers
-        ) as external_websocket:
+        async with ws_connect(target_url) as external_websocket:
             # Create a task to handle messages from the client to the external server
             async def client_to_external():
                 try:
