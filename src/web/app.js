@@ -58,7 +58,7 @@ function renderMeta(container) {
         renderLabel('Status', container.Status, "float:right; background:none;"),
         renderLabel('Id', container.Id.substr(0, 12)),
         renderLabel('Names', container.Names.join('<br/>')),
-        renderLabel('Local Folder', labels["devcontainer.local_folder"]) || '',
+        renderLabel('Folder', labels["devcontainer.local_folder"]) || '',
         renderLabel('Ports', extractPorts(container.Ports)),
     ].join('');
 }
@@ -109,7 +109,7 @@ function renderDetailView(container) {
                 <h4>Info</h4>
                 ${renderMetaRow('ID', container.Id)}
                 ${renderMetaRow('Names', container.Names.join('<br/>') || '-')}
-                ${renderMetaRow('Local Folder', labels["devcontainer.local_folder"])}
+                ${renderMetaRow('Folder', labels["devcontainer.local_folder"])}
                 ${renderMetaRow('State', container.State)}
                 ${renderMetaRow('Status', container.Status)}
             </div>
