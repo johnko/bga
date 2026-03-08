@@ -94,10 +94,8 @@ async def proxy_code_server_websocket(path: str, client_websocket: WebSocket):
         if hasattr(client_websocket, "query_params")
         else {}
     )
-    ws_headers = {key: value for key, value in client_websocket.headers.items()}
 
     target_url = f"ws://127.0.0.1:{host_port}"
-    print(f"websocket={target_url}")
 
     await client_websocket.accept()
 
@@ -144,8 +142,6 @@ async def proxy_code_server_websocket(path: str, client_websocket: WebSocket):
     except Exception as e:
         print(f"An error occurred: {e}")
         await client_websocket.close(code=1011)  # Internal error
-
-    raise HTTPException(status_code=502, detail=f"WebSocket proxy error: {str(e)}")
 
 
 @app.get("/proxy/codeserver/{path:path}")
