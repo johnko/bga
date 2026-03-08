@@ -102,12 +102,12 @@ function renderDetailView(container) {
     const detailDiv = document.getElementById('container-detail');
     const labels = container.Labels || {};
     const html = `
-        <h2>${sanitize(container.Names?.[0] || 'Unnamed')}</h2>
+        <h2>${sanitize(container.Names?.[0] || 'Unnamed')}<span> details:</span></h2>
 
         <div class="detail-meta">
             <div class="meta-section">
                 <h4>Info</h4>
-                ${renderMetaRow('ID', container.Id.substr(0, 12))}
+                ${renderMetaRow('ID', container.Id)}
                 ${renderMetaRow('Names', container.Names.join('<br/>') || '-')}
                 ${renderMetaRow('Local Folder', labels["devcontainer.local_folder"])}
                 ${renderMetaRow('State', container.State)}
