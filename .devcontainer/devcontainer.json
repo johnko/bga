@@ -9,6 +9,7 @@
       "disableUpdateCheck": true,
       "disableWorkspaceTrust": true,
       "host": "0.0.0.0",
+      "trustedOrigins": "127.0.0.1:8000",
       "workspace": "/workspaces"
     }
   },

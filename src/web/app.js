@@ -95,11 +95,15 @@ function isOpencodeOrCodeserverURL(container) {
                     port.container_port === 8080 &&
                     labels["devcontainer.metadata"].match(/ghcr.io\/coder\/devcontainer-features\/code-server/)
                 ) {
-                    link_class = 'button-codeserver'
-                    link_text = 'Coder code-server IDE';
-                }
-                if (link_text) {
-                    return `<a class="button ${link_class}" target="_blank" href="http://${port.host_ip}:${port.host_port}">${link_text}</a>`
+                    // Use proxy path if available, otherwise use direct URL
+                    const proxy = container.codeserver_proxy;
+                    if (proxy && proxy.proxy_path) {
+                        link_text = 'Coder code-server IDE';
+                        return `<a class="button ${link_class}" target="_blank" href="${proxy.proxy_path}">${link_text}</a>`
+                    } else if (!port.host_ip.includes('127.0.0.1')) {
+                        link_text = 'Coder code-server IDE';
+                        return `<a class="button ${link_class}" target="_blank" href="http://${port.host_ip}:${port.host_port}">${link_text}</a>`
+                    }
                 }
             }
         });
