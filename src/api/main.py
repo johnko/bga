@@ -132,9 +132,9 @@ async def proxy_code_server(path: str, request: Request):
                 # print(response_headers["Content-Security-Policy"])
                 temp = re.sub(
                     r"script-src[^;]+;",
-                    "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+                    "script-src 'self' 'upgrade' 'unsafe-inline' 'unsafe-eval'",
                     response_headers["Content-Security-Policy"].replace(
-                        "script-src 'self'", "script-src 'self' 'unsafe-inline'"
+                        "script-src 'self'", "script-src 'self' 'upgrade'"
                     ),
                 )
                 # print(temp)
@@ -149,6 +149,59 @@ async def proxy_code_server(path: str, request: Request):
     except Exception as e:
         error_msg = str(e)
         raise HTTPException(status_code=502, detail=error_msg)
+
+
+@app.websocket("/proxy/codeserver/{path:path}")
+async def proxy_code_server_websocket(path: str, websocket: websockets.WebSocketServer):
+    """Proxy WebSocket connections to code-server container"""
+    import websockets
+
+    devcontainer_id = path.split("/")[0]
+    container = await get_devcontainer_details(devcontainer_id)
+    host_port = container.get("codeserver_proxy", {}).get("host_port")
+
+    target_url = f"ws://127.0.0.1:{host_port}"
+
+    if devcontainer_id and "/proxy/codeserver/" in url:
+        proxied_path = path.replace(f"/proxy/codeserver/{devcontainer_id}", "")
+    else:
+        proxied_path = ""
+
+    # For websocket connection, we need to handle the raw upgrade differently
+    # Since urllib doesn't support websockets well, we'll use a different approach
+    # by opening in a subprocess if needed or using a dedicated proxy
+
+    try:
+        async with websockets.connect(target_url) as ws_client:
+            while True:
+                data = await websocket.receive()
+                try:
+                    await ws_client.send(data)
+                except Exception as e:
+                    break
+
+                try:
+                    response = await ws_client.recv()
+                    if response:
+                        await websocket.send(response)
+                    else:
+                        break
+                except websockets.exceptions.ConnectionClosed:
+                    break
+    except Exception as e:
+        print(f"WebSocket proxy error: {e}")
+        # Fallback to regular http request for initial connection
+        if request.method == "GET":
+            try:
+                import urllib.request
+
+                req = urllib.request.Request(target_url + proxied_path)
+                with urllib.request.urlopen(req, timeout=120) as response:
+                    return Response(content="Error proxying websocket connection")
+            except Exception:
+                pass
+
+    raise HTTPException(status_code=502, detail=f"WebSocket proxy error: {str(e)}")
 
 
 app.mount("/dashboard", StaticFiles(directory="web", html=True), name="dashboard")
