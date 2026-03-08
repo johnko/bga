@@ -44,8 +44,10 @@ function renderStateBadge(container) {
         style = 'background:green;';
     } else if (['exited','stopped'].includes(state)) {
         emoji = '🛑';
+        style = 'background:red;';
     } else {
         emoji = '❓';
+        style = 'background:#777;';
     }
     return `<div class="state-badge" style="${style}">${emoji} <span>${state}</span></div>`;
 }
@@ -105,9 +107,13 @@ function renderDetailView(container) {
 
         <div class="detail-meta">
             <div class="meta-section">
-                <h4>Identification</h4>
-                ${[renderMetaRow('ID', container.Id.substr(0, 12)), renderMetaRow('Name', container.Names?.[0] || '-')].join('')}
-                </div>
+                <h4>Info</h4>
+                ${renderMetaRow('ID', container.Id.substr(0, 12))}
+                ${renderMetaRow('Name', container.Names?.[0] || '-')}
+                ${renderMetaRow('Local Folder', labels["devcontainer.local_folder"])}
+                ${renderMetaRow('State', container.State)}
+                ${renderMetaRow('Status', container.Status)}
+            </div>
 
             <div class="meta-section">
                 <h4>Ports</h4>
@@ -133,12 +139,6 @@ function renderDetailView(container) {
                 </div>
             </div>
 
-            <div class="meta-section">
-                <h4>Info</h4>
-                ${renderMetaRow('Local Folder', labels["devcontainer.local_folder"])}
-                ${renderMetaRow('State', container.State)}
-                ${renderMetaRow('Status', container.Status)}
-            </div>
         </div>
     `;
     if (!container.Labels?.['dev.containers.source']) {
