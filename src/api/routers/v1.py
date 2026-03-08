@@ -1,4 +1,5 @@
 import json
+import os
 import subprocess
 
 from fastapi import APIRouter, HTTPException
@@ -27,8 +28,10 @@ def dockerpsjson():
     dockerpsoutput = dockerpsprocess.stdout.decode("utf-8")
     dockerpsobject = json.loads(dockerpsoutput)
     for item in dockerpsobject:
-        new_local_folder = "/".join(
-            item.get("Labels").get("devcontainer.local_folder").split("/")[-2:]
+        new_local_folder = (
+            item.get("Labels")
+            .get("devcontainer.local_folder")
+            .replace(os.getenv("HOME"), "~")
         )
         if new_local_folder:
             item["Labels"]["devcontainer.local_folder"] = new_local_folder

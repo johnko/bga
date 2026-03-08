@@ -43,7 +43,7 @@ body {
 #app {
     max-width: 1400px;
     margin: 0 auto;
-    padding: 20px;
+    /* padding: 20px; */
 }
 
 .list-view {
@@ -116,6 +116,10 @@ body {
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     gap: 15px;
     margin-top: 20px;
+}
+
+.meta-section {
+    width: 50%;
 }
 
 .meta-section h4 {
