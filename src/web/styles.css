@@ -86,7 +86,7 @@ body {
     color: mediumpurple;
     font-size: 18px;
     margin-bottom: 10px;
-    margin-top: 5px;
+    margin-top: 3px;
     word-break: break-all;
 }
 
@@ -98,7 +98,7 @@ body {
 }
 
 .meta-item {
-    background-color: rgba(255,255,255,0.1);
+    background-color: rgba(255,255,255,0.5);
     color: #777;
     font-size: 13px;
     padding: 6px 12px;
@@ -115,12 +115,13 @@ body {
     background-color: #f0f0f0;
     border-radius: 12px;
     border: 1px solid rgba(255,255,255,0.1);
-    padding: 25px;
+    padding: 15px 25px 25px 25px;
 }
 
 .detail-view h2 {
     color: mediumpurple;
     font-size: 24px;
+    margin-bottom: 10px;
     word-break: break-all;
 }
 
@@ -130,12 +131,21 @@ body {
 }
 
 .detail-meta {
+    background-color: rgba(255,255,255,0.5);
     gap: 15px;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    padding: 0px 12px 6px 12px;
 }
 
 .detail-view {
     width: 50%;
+}
+
+.meta-section:first-of-type h4 {
+    color: dodgerblue;
+    font-size: 15px;
+    margin-bottom: 10px;
+    margin-top: 15px;
 }
 
 .meta-section h4 {

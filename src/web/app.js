@@ -56,10 +56,10 @@ function renderMeta(container) {
     const labels = container.Labels || {};
     return [
         renderLabel('Status', container.Status, "float:right; background:none;"),
-        renderLabel('Id', container.Id.substr(0, 12)),
+        renderLabel('ID', container.Id.substr(0, 12)),
         renderLabel('Names', container.Names.join('<br/>')),
         renderLabel('Folder', labels["devcontainer.local_folder"]) || '',
-        renderLabel('Ports', extractPorts(container.Ports)),
+        renderLabel('Ports', extractPorts(container.Ports) || '-'),
     ].join('');
 }
 
