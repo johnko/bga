@@ -2,8 +2,7 @@ from fastapi import FastAPI, Request, HTTPException
 from fastapi.responses import HTMLResponse, RedirectResponse, Response
 from fastapi.staticfiles import StaticFiles
 
-import urllib.request
-import urllib.parse
+import io
 
 app = FastAPI()
 
@@ -75,17 +74,17 @@ async def get_devcontainer_details(devcontainer_id: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.get("/proxy/codeserver/{devcontainer_id:path}/")
-async def proxy_code_server(devcontainer_id: str, request: Request):
+@app.get("/proxy/codeserver/{path}")
+async def proxy_code_server(path: str, request: Request):
     """Proxy requests to code-server container for the web interface"""
+    devcontainer_id = path.split("/")[0]
     container = await get_devcontainer_details(devcontainer_id)
-    host_port = (
-        container
-        .get("codeserver_proxy", {})
-        .get("host_port")
-    )
+    host_port = container.get("codeserver_proxy", {}).get("host_port")
 
     proxied_path = request.url.path.replace(f"/proxy/codeserver/{devcontainer_id}", "")
+    # Ensure no double slashes and handle trailing slash properly
+    if proxied_path.endswith("/"):
+        proxied_path = proxied_path.rstrip("/")
 
     target_url = f"http://127.0.0.1:{host_port}{proxied_path}"
     print(target_url)
@@ -108,50 +107,14 @@ async def proxy_code_server(devcontainer_id: str, request: Request):
         req = urllib.request.Request(target_url, data=body, headers=headers)
 
         with urllib.request.urlopen(req, timeout=120) as response:
-            return Response(
-                response.read(),
-                status_code=response.status,
+            raw_bytes = response.read()
+            encoding = response.headers.get_content_charset() or "utf-8"
+            decoded_string = raw_bytes.decode(encoding)
+            modified_string = decoded_string.replace(
+                "/proxy/codeserver/devcontainer_id", ""
             )
-    except Exception as e:
-        error_msg = str(e)
-        raise HTTPException(status_code=502, detail=error_msg)
-
-
-@app.get("/proxy/codeserver/{devcontainer_id:path}/{extra_path}")
-async def proxy_code_server(devcontainer_id: str, request: Request, extra_path: str):
-    """Proxy requests to code-server container for the web interface"""
-    container = await get_devcontainer_details(devcontainer_id)
-    host_port = (
-        container
-        .get("codeserver_proxy", {})
-        .get("host_port")
-    )
-
-    proxied_path = request.url.path.replace(f"/proxy/codeserver/{devcontainer_id}", "")
-
-    target_url = f"http://127.0.0.1:{host_port}{proxied_path}"
-    print(target_url)
-
-    try:
-        import urllib.request
-
-        headers = {}
-        body = None
-
-        if request.method not in ["GET", "HEAD"]:
-            body_bytes = await request.body()
-            if body_bytes:
-                body = (
-                    bytes(body_bytes)
-                    if isinstance(body_bytes, memoryview)
-                    else body_bytes
-                )
-
-        req = urllib.request.Request(target_url, data=body, headers=headers)
-
-        with urllib.request.urlopen(req, timeout=120) as response:
             return Response(
-                response.read(),
+                modified_string,
                 status_code=response.status,
             )
     except Exception as e:
