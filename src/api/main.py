@@ -113,7 +113,7 @@ async def proxy_code_server_websocket(path: str, client_websocket: WebSocket):
             async def client_to_external():
                 try:
                     while True:
-                        data = await client_websocket.recv()
+                        data = await client_websocket.receive_text()
                         await external_websocket.send(data)
                 except WebSocketDisconnect:
                     print("Client disconnected, closing external connection.")
@@ -125,7 +125,7 @@ async def proxy_code_server_websocket(path: str, client_websocket: WebSocket):
                 try:
                     while True:
                         data = await external_websocket.recv()
-                        await client_websocket.send(data)
+                        await client_websocket.send_text(data)
                 except ConnectionClosed:
                     print("External server closed connection.")
                 except WebSocketDisconnect:
