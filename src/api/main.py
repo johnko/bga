@@ -1,11 +1,14 @@
-from fastapi import FastAPI, Request, HTTPException
+from fastapi import FastAPI, Request, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.responses import HTMLResponse, RedirectResponse, Response
 from fastapi.staticfiles import StaticFiles
 import urllib.request
 
+import asyncio
+
 import io
 import re
-import websockets
+from websockets.client import connect as ws_connect
+from websockets.exceptions import ConnectionClosed
 
 app = FastAPI()
 
@@ -78,7 +81,7 @@ async def get_devcontainer_details(devcontainer_id: str):
 
 
 @app.websocket("/proxy/codeserver/{path:path}")
-async def proxy_code_server_websocket(path: str, websocket: websockets.WebSocketServer):
+async def proxy_code_server_websocket(path: str, client_websocket: WebSocket):
     """Proxy WebSocket connections to code-server container"""
 
     devcontainer_id = path.split("/")[0]
@@ -87,45 +90,62 @@ async def proxy_code_server_websocket(path: str, websocket: websockets.WebSocket
 
     # Extract query parameters from original websocket URL and forward headers
     ws_query = (
-        dict(websocket.query_params) if hasattr(websocket, "query_params") else {}
+        dict(client_websocket.query_params)
+        if hasattr(client_websocket, "query_params")
+        else {}
     )
-    ws_headers = {key: value for key, value in websocket.headers.items()}
+    ws_headers = {key: value for key, value in client_websocket.headers.items()}
 
     target_url = f"ws://127.0.0.1:{host_port}"
     print(f"websocket={target_url}")
 
-    # For websocket connection, we need to handle the raw upgrade differently
-    # Since urllib doesn't support websockets well, we'll use a different approach
-    # by opening in a subprocess if needed or using a dedicated proxy
+    await client_websocket.accept()
+
+    # Build target URL with query parameters
+    encoded_query = (
+        "&".join(f"{k}={v}" for k, v in ws_query.items()) if ws_query else ""
+    )
+    if encoded_query:
+        target_url = f"{target_url}?{encoded_query}"
 
     try:
-        # Build target URL with query parameters
-        encoded_query = (
-            "&".join(f"{k}={v}" for k, v in ws_query.items()) if ws_query else ""
-        )
-        if encoded_query:
-            target_url = f"{target_url}?{encoded_query}"
-
-        async with websockets.connect(
+        # Connect to the external WebSocket server
+        async with ws_connect(
             target_url, additional_headers=ws_headers
-        ) as ws_client:
-            while True:
-                data = await websocket.receive()
+        ) as external_websocket:
+            # Create a task to handle messages from the client to the external server
+            async def client_to_external():
                 try:
-                    await ws_client.send(data)
-                except Exception as e:
-                    break
+                    while True:
+                        data = await client_websocket.receive_text()
+                        await external_websocket.send(data)
+                except WebSocketDisconnect:
+                    print("Client disconnected, closing external connection.")
+                except ConnectionClosed:
+                    print("External server closed connection unexpectedly.")
 
+            # Create a task to handle messages from the external server to the client
+            async def external_to_client():
                 try:
-                    response = await ws_client.recv()
-                    if response:
-                        await websocket.send(response)
-                    else:
-                        break
-                except websockets.exceptions.ConnectionClosed:
-                    break
+                    while True:
+                        data = await external_websocket.recv()
+                        await client_websocket.send_text(data)
+                except ConnectionClosed:
+                    print("External server closed connection.")
+                except WebSocketDisconnect:
+                    print("Client disconnected, cannot send message.")
+
+            # Run both tasks concurrently until one of them finishes
+            await asyncio.gather(client_to_external(), external_to_client())
+
+    except ConnectionRefusedError:
+        await client_websocket.send_text(
+            "Could not connect to external WebSocket server."
+        )
+        await client_websocket.close()
     except Exception as e:
-        print(f"WebSocket proxy error: {e}")
+        print(f"An error occurred: {e}")
+        await client_websocket.close(code=1011)  # Internal error
 
     raise HTTPException(status_code=502, detail=f"WebSocket proxy error: {str(e)}")
 
