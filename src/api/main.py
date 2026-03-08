@@ -84,10 +84,14 @@ async def proxy_code_server_websocket(path: str, websocket: websockets.WebSocket
     container = await get_devcontainer_details(devcontainer_id)
     host_port = container.get("codeserver_proxy", {}).get("host_port")
 
+    # Extract query parameters from original websocket URL and forward headers
+    ws_query = dict(websocket.query_params) if hasattr(websocket, 'query_params') else {}
+    ws_headers = {key: value for key, value in websocket.headers.items()}
+
     target_url = f"ws://127.0.0.1:{host_port}"
     print(f"websocket={target_url}")
 
-    if devcontainer_id and "/proxy/codeserver/" in url:
+    if devcontainer_id and "/proxy/codeserver/" in path:
         proxied_path = path.replace(f"/proxy/codeserver/{devcontainer_id}", "")
     else:
         proxied_path = ""
@@ -97,6 +101,14 @@ async def proxy_code_server_websocket(path: str, websocket: websockets.WebSocket
     # by opening in a subprocess if needed or using a dedicated proxy
 
     try:
+        # Build target URL with query parameters
+        encoded_query = "&".join(f"{k}={v}" for k, v in ws_query.items()) if ws_query else ""
+        if encoded_query:
+            target_url = f"{target_url}?{encoded_query}"
+        
+        # For websockets that support headers, create a dict of headers to forward
+        websocket_headers = None  # Pass custom headers if supported
+        
         async with websockets.connect(target_url) as ws_client:
             while True:
                 data = await websocket.receive()
