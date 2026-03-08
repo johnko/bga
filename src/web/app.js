@@ -42,7 +42,7 @@ function renderStateBadge(container) {
     if (['running'].includes(state)) {
         emoji = '🐎';
         style = 'background:green;';
-    } else if (['stopped'].includes(state)) {
+    } else if (['exited','stopped'].includes(state)) {
         emoji = '🛑';
     } else {
         emoji = '❓';
@@ -54,7 +54,7 @@ function renderMeta(container) {
     const labels = container.Labels || {};
     return [
         renderLabel('Status', container.Status, "float:right; background:none;"),
-        renderLabel('Id', container.Id.substr(0, 12), "float:right; background:none;"),
+        renderLabel('Id', container.Id.substr(0, 12)),
         renderLabel('Name', container.Names?.[0]),
         renderLabel('Local Folder', labels["devcontainer.local_folder"]) || '',
         renderLabel('Ports', extractPorts(container.Ports)),

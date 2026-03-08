@@ -18,6 +18,7 @@ def dockerpsjson():
         [
             "docker",
             "ps",
+            "-a",
             "--filter",
             "label=devcontainer.local_folder",
             "--format",
