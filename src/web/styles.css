@@ -70,7 +70,7 @@ body {
 .container-card:hover {
     border-color: dodgerblue;
     box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
-    transform: translateY(-5px);
+    transform: translateY(-2px);
 }
 
 .state-badge {

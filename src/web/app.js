@@ -27,7 +27,7 @@ function renderContainerList(containers) {
     }
 
     containerDiv.innerHTML = containers.map(container => `
-        <div class="container-card" onclick="showContainerDetails('${container.Id}')">
+        <div class="container-card">
             ${renderStateBadge(container)}
             <h3>${sanitize((container.Names || ['unnamed']).sort()[0])}</h3>
             ${renderMeta(container)}
@@ -49,7 +49,7 @@ function renderStateBadge(container) {
         emoji = '❓';
         style = 'background:#777;';
     }
-    return `<div class="state-badge" style="${style}">${emoji} <span>${state}</span></div>`;
+    return `<div class="state-badge" onclick="showContainerDetails('${container.Id}')" style="${style}">${emoji} <span>${state}</span></div>`;
 }
 
 function renderMeta(container) {
@@ -60,6 +60,7 @@ function renderMeta(container) {
         renderLabel('Names', container.Names.join('<br/>')),
         renderLabel('Folder', labels["devcontainer.local_folder"]) || '',
         renderLabel('Ports', extractPorts(container.Ports) || '-'),
+        renderLabel('', isOpencodeOrCodeserverURL(container)),
     ].join('');
 }
 
@@ -74,6 +75,32 @@ function extractPorts(ports) {
         ${port.host_ip}:${port.host_port}/${port.protocol} -> ${port.container_port}/${port.protocol}
     `).join('<br/>');
     return port;
+}
+
+function isOpencodeOrCodeserverURL(container) {
+    const labels = container.Labels || {};
+    if (container.Ports) {
+        const buttons = container.Ports.map(port => {
+            if (port.protocol === 'tcp') {
+                let link_text = '';
+                if (
+                    port.container_port === 4096 &&
+                    labels["devcontainer.metadata"].match(/opencode/)
+                ) {
+                    link_text = 'OpenCode';
+                } else if (
+                    port.container_port === 8080 &&
+                    labels["devcontainer.metadata"].match(/ghcr.io\/coder\/devcontainer-features\/code-server/)
+                ) {
+                    link_text = 'Coder code-server IDE';
+                }
+                if (link_text) {
+                    return `<a target="_blank" href="http://${port.host_ip}:${port.host_port}">${link_text}</a>`
+                }
+            }
+        });
+        return buttons.join('<br/>');
+    }
 }
 
 function sanitize(str) {
