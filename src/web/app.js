@@ -22,7 +22,7 @@ function renderContainerList(containers) {
     const containerDiv = document.getElementById('container-list');
 
     if (!containers || containers.length === 0) {
-        containerDiv.innerHTML = '<div class="no-containers">No running devcontainers found.</div>';
+        containerDiv.innerHTML = '<div class="no-containers">No devcontainers found.</div>';
         return;
     }
 
