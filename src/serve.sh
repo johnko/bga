@@ -9,7 +9,7 @@ GOLANG_VERSION=1.26.1
 
 WORKDIR=$(dirname "$0")
 pushd "$WORKDIR"
-# mise exec python@$PYTHON_VERSION -- pip install -r requirements.txt
+mise exec python@$PYTHON_VERSION -- pip install -r requirements.txt
 # mise exec python@$PYTHON_VERSION -- uvicorn api.main:app --host 127.0.0.1 --port 8000
 mise exec go@$GOLANG_VERSION -- go clean
 mise exec go@$GOLANG_VERSION -- go run ./golang/api/main.go
