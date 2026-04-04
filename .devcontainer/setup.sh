@@ -5,7 +5,7 @@ set -euxo pipefail
 NODE_VERSION=24.14.0
 
 # renovate: datasource=github-releases depName=anomalyco/opencode packageName=anomalyco/opencode
-OPENCODE_VERSION=v1.2.27
+OPENCODE_VERSION=v1.3.3
 
 if type mise &>/dev/null; then
   ## install opencode globally in mise environment
