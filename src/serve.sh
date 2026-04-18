@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # renovate: datasource=python-version depName=python packageName=python
-PYTHON_VERSION=3.14.3
+PYTHON_VERSION=3.14.4
 
 # renovate: datasource=golang-version depName=golang packageName=golang
 GOLANG_VERSION=1.26.1
