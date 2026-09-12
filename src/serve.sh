@@ -5,7 +5,7 @@ set -euo pipefail
 PYTHON_VERSION=3.14.7
 
 # renovate: datasource=golang-version depName=golang packageName=golang
-GOLANG_VERSION=1.27.0
+GOLANG_VERSION=1.27.1
 
 WORKDIR=$(dirname "$0")
 pushd "$WORKDIR"
