@@ -2,7 +2,7 @@
 set -euxo pipefail
 
 # renovate: datasource=github-releases depName=nodejs/node packageName=nodejs/node
-NODE_VERSION=24.22.2
+NODE_VERSION=24.22.3
 
 # renovate: datasource=github-releases depName=anomalyco/opencode packageName=anomalyco/opencode
 OPENCODE_VERSION=1.19.5

@@ -2,7 +2,7 @@
 set -euxo pipefail
 
 # renovate: datasource=github-releases depName=nodejs/node packageName=nodejs/node
-NODE_VERSION=24.22.2
+NODE_VERSION=24.22.3
 
 if type mise &>/dev/null; then
   # pushd /home/codespace/.opencode/plugin/
